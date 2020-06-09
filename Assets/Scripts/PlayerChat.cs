@@ -21,7 +21,7 @@ public class PlayerChat : NetworkBehaviour
     GameObject ingameUI;
     GameObject chatUI;
     GameObject colorChangeUI;
-    Button[] colorChangeButtons;
+    GameObject playerListUI;
 
     public static event Action<PlayerChat, string> OnMessage;
 
@@ -70,7 +70,7 @@ public class PlayerChat : NetworkBehaviour
             nextButton.onClick.AddListener(() => ActivateChatWindow());
 
             colorChangeUI = uIManager.GetColorChangeButtons();
-            colorChangeButtons = uIManager.GetColorChangeButtons().GetComponentsInChildren<Button>();
+            Button[] colorChangeButtons;  colorChangeButtons = uIManager.GetColorChangeButtons().GetComponentsInChildren<Button>();
 
             foreach(Button colorButton in colorChangeButtons)
             {
@@ -78,6 +78,8 @@ public class PlayerChat : NetworkBehaviour
                 colorButton.onClick.AddListener(() => SetPlayerColor(color));
                 colorButton.onClick.AddListener(() => uIManager.UpdateCarPreviewColor(playerColor));
             }
+
+            playerListUI = uIManager.GetPlayerListUI();
         }
 
         chatNetworkBehaviour = FindObjectOfType<ChatNetworkBehaviour>();
@@ -96,6 +98,7 @@ public class PlayerChat : NetworkBehaviour
         usernameUI.SetActive(false);
         colorChangeUI.SetActive(true);
         chatUI.SetActive(true);
+        playerListUI.SetActive(true);
     }
 
     [Command]

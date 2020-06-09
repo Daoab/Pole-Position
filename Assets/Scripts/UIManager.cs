@@ -32,6 +32,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text textPosition;
     [Space]
 
+    [SerializeField] GameObject playerListUI;
+    [Space]
+
     [SerializeField] private GameObject colorChangeButtons;
     [Space]
 
@@ -125,6 +128,11 @@ public class UIManager : MonoBehaviour
     public GameObject GetColorChangeButtons()
     {
         return colorChangeButtons;
+    }
+
+    public GameObject GetPlayerListUI()
+    {
+        return playerListUI;
     }
     #endregion
 }
