@@ -25,12 +25,17 @@ public class UIManager : MonoBehaviour
     [Header("Chat UI")]
     [SerializeField] private GameObject chatUI;
 
-    [Header("In-Game HUD")] [SerializeField]
-    private GameObject inGameHUD;
-
+    [Header("In-Game HUD")] 
+    [SerializeField] private GameObject inGameHUD;
     [SerializeField] private Text textSpeed;
     [SerializeField] private Text textLaps;
     [SerializeField] private Text textPosition;
+    [Space]
+
+    [SerializeField] private GameObject colorChangeButtons;
+    [Space]
+
+    [SerializeField] private GameObject carBody;
 
     private void Awake()
     {
@@ -85,6 +90,13 @@ public class UIManager : MonoBehaviour
         ActivateUsernameUI();
     }
 
+    public void UpdateCarPreviewColor(Color color)
+    {
+        Material carMaterial = carBody.GetComponent<MeshRenderer>().materials[1];
+        carMaterial.color = color;
+    }
+
+    #region UIReferences
     public GameObject GetChatReference()
     {
         return chatUI;
@@ -109,4 +121,10 @@ public class UIManager : MonoBehaviour
     {
         return inGameHUD;
     }
+
+    public GameObject GetColorChangeButtons()
+    {
+        return colorChangeButtons;
+    }
+    #endregion
 }

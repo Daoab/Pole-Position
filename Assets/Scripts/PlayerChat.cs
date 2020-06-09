@@ -10,6 +10,7 @@ public class PlayerChat : NetworkBehaviour
     [SyncVar] public string playerName = "";
     [SyncVar] public int id = 0;
     [SyncVar] public bool isReady = false;
+    [SyncVar] [SerializeField] Color playerColor;
 
     ChatNetworkBehaviour chatNetworkBehaviour;
 
@@ -19,6 +20,8 @@ public class PlayerChat : NetworkBehaviour
     GameObject usernameUI;
     GameObject ingameUI;
     GameObject chatUI;
+    GameObject colorChangeUI;
+    Button[] colorChangeButtons;
 
     public static event Action<PlayerChat, string> OnMessage;
 
@@ -30,6 +33,16 @@ public class PlayerChat : NetworkBehaviour
     public string GetPlayerName()
     {
         return this.playerName;
+    }
+
+    public void SetPlayerColor(Color color)
+    {
+        this.playerColor = color;
+    }
+
+    public Color GetPlayerColor()
+    {
+        return this.playerColor;
     }
 
     public override void OnStartServer()
@@ -55,14 +68,33 @@ public class PlayerChat : NetworkBehaviour
 
             inputField.onEndEdit.AddListener((text) => CmdCheckPlayerName(inputField.text));
             nextButton.onClick.AddListener(() => ActivateChatWindow());
+
+            colorChangeUI = uIManager.GetColorChangeButtons();
+            colorChangeButtons = uIManager.GetColorChangeButtons().GetComponentsInChildren<Button>();
+
+            foreach(Button colorButton in colorChangeButtons)
+            {
+                Color color = colorButton.GetComponent<ColorChangeButton>().GetButtonColor();
+                colorButton.onClick.AddListener(() => SetPlayerColor(color));
+                colorButton.onClick.AddListener(() => uIManager.UpdateCarPreviewColor(playerColor));
+            }
         }
 
         chatNetworkBehaviour = FindObjectOfType<ChatNetworkBehaviour>();
     }
 
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+        chatNetworkBehaviour.RemovePlayerName(playerName);
+    }
+
+ 
+
     public void ActivateChatWindow()
     {
         usernameUI.SetActive(false);
+        colorChangeUI.SetActive(true);
         chatUI.SetActive(true);
     }
 
@@ -71,7 +103,6 @@ public class PlayerChat : NetworkBehaviour
     {
         string checkedPlayerName = playerName;
 
-        Debug.Log(chatNetworkBehaviour.ContainsPlayerName(playerName));
         if (chatNetworkBehaviour.ContainsPlayerName(playerName))
         {
             checkedPlayerName = playerName + "_" + id.ToString();
@@ -82,7 +113,6 @@ public class PlayerChat : NetworkBehaviour
             SetPlayerName(checkedPlayerName);
         }
 
-        Debug.Log(checkedPlayerName);
         chatNetworkBehaviour.AddPlayerName(checkedPlayerName);
     }
 
@@ -98,4 +128,6 @@ public class PlayerChat : NetworkBehaviour
     {
         OnMessage?.Invoke(this, message);
     }
+
+    //IMPORTANTE: Instanciar el prefab del coche con el nombre y el color introducidos
 }

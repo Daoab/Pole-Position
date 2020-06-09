@@ -20,9 +20,8 @@ public class ChatWindowPolePosition : MonoBehaviour
         string prettyMessage = player.isLocalPlayer ?
             $"<color=red>{player.playerName}: </color> {message}" :
             $"<color=blue>{player.playerName}: </color> {message}";
-        AppendMessage(prettyMessage);
 
-        Debug.Log(message);
+        AppendMessage(prettyMessage);
     }
 
     public void OnSend()

@@ -63,3 +63,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   playerName: 
+  id: 0
+  isReady: 0
+  playerColor: {r: 0.9607843, g: 0.28627452, b: 0.3647059, a: 1}

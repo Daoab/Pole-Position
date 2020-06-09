@@ -6,10 +6,16 @@ using Mirror;
 public class ChatNetworkBehaviour : NetworkBehaviour
 {
     SyncListString playerNames;
+    [SerializeField] GameObject playerListUI;
 
     public void AddPlayerName(string playerName)
     {
         playerNames.Add(playerName);
+    }
+
+    public void RemovePlayerName(string playerName)
+    {
+        playerNames.Remove(playerName);
     }
 
     public bool ContainsPlayerName(string playerName)
@@ -17,11 +23,18 @@ public class ChatNetworkBehaviour : NetworkBehaviour
         return playerNames.Contains(playerName);
     }
 
+    public void UpdatePlayerListUI()
+    {
+
+    }
+
     private void Update()
     {
+        string aux = "";
         foreach(string name in playerNames)
         {
-            Debug.Log(name);
+            aux += name + " ";
         }
+        Debug.Log(aux);
     }
 }
