@@ -9,13 +9,21 @@ public class UIManager : MonoBehaviour
 {
     public bool showGUI = true;
 
-    private NetworkManager m_NetworkManager;
+    private NetworkManagerPolePosition m_NetworkManager;
 
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
     [SerializeField] private Button buttonHost;
     [SerializeField] private Button buttonClient;
     [SerializeField] private Button buttonServer;
     [SerializeField] private InputField inputFieldIP;
+
+    [Header("Username")]
+    [SerializeField] private GameObject userNameUI;
+    [SerializeField] private InputField userNameInputField;
+    [SerializeField] private Button userNameNextButton;
+
+    [Header("Chat UI")]
+    [SerializeField] private GameObject chatUI;
 
     [Header("In-Game HUD")] [SerializeField]
     private GameObject inGameHUD;
@@ -26,7 +34,7 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        m_NetworkManager = FindObjectOfType<NetworkManager>();
+        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
     }
 
     private void Start()
@@ -46,30 +54,59 @@ public class UIManager : MonoBehaviour
     {
         mainMenu.SetActive(true);
         inGameHUD.SetActive(false);
+        userNameUI.SetActive(false);
+        chatUI.SetActive(false);
     }
 
-    private void ActivateInGameHUD()
+    private void ActivateUsernameUI()
     {
         mainMenu.SetActive(false);
-        inGameHUD.SetActive(true);
+        //inGameHUD.SetActive(true);
+        //chatUI.SetActive(false);
+        userNameUI.SetActive(true);
     }
 
     private void StartHost()
     {
         m_NetworkManager.StartHost();
-        ActivateInGameHUD();
+        ActivateUsernameUI();
     }
 
     private void StartClient()
     {
         m_NetworkManager.StartClient();
         m_NetworkManager.networkAddress = inputFieldIP.text;
-        ActivateInGameHUD();
+        ActivateUsernameUI();
     }
 
     private void StartServer()
     {
         m_NetworkManager.StartServer();
-        ActivateInGameHUD();
+        ActivateUsernameUI();
+    }
+
+    public GameObject GetChatReference()
+    {
+        return chatUI;
+    }
+
+    public GameObject GetUsernameUIReference()
+    {
+        return userNameUI;
+    }
+
+    public Button GetUsernameNextButton()
+    {
+        return userNameNextButton;
+    }
+
+    public InputField GetUsernameUIInputField()
+    {
+        return userNameInputField;
+    }
+
+    public GameObject GetInGameUIReference()
+    {
+        return inGameHUD;
     }
 }

@@ -14,7 +14,7 @@ public class SetupPlayer : NetworkBehaviour
     [SyncVar] private string m_Name;
 
     private UIManager m_UIManager;
-    private NetworkManager m_NetworkManager;
+    private NetworkManagerPolePosition m_NetworkManager;
     private PlayerController m_PlayerController;
     private PlayerInfo m_PlayerInfo;
     private PolePositionManager m_PolePositionManager;
@@ -40,7 +40,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartClient();
         m_PlayerInfo.ID = m_ID;
-        m_PlayerInfo.Name = "Player" + m_ID;
+        //m_PlayerInfo.Name = "Player" + m_ID;
         m_PlayerInfo.CurrentLap = 0;
         m_PolePositionManager.AddPlayer(m_PlayerInfo);
     }
@@ -59,7 +59,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         m_PlayerInfo = GetComponent<PlayerInfo>();
         m_PlayerController = GetComponent<PlayerController>();
-        m_NetworkManager = FindObjectOfType<NetworkManager>();
+        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
         m_PolePositionManager = FindObjectOfType<PolePositionManager>();
         m_UIManager = FindObjectOfType<UIManager>();
     }

@@ -8,7 +8,7 @@ using UnityEngine;
 public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
-    public NetworkManager networkManager;
+    public NetworkManagerPolePosition networkManager;
 
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4);
     private CircuitController m_CircuitController;
@@ -16,7 +16,7 @@ public class PolePositionManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (networkManager == null) networkManager = FindObjectOfType<NetworkManager>();
+        if (networkManager == null) networkManager = FindObjectOfType<NetworkManagerPolePosition>();
         if (m_CircuitController == null) m_CircuitController = FindObjectOfType<CircuitController>();
 
         m_DebuggingSpheres = new GameObject[networkManager.maxConnections];

@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Vehicle
   - Puppet
+  - ChatWindow
+  - UsernameUI
+  - InGameHUD
   layers:
   - Default
   - TransparentFX
