@@ -25,6 +25,9 @@ public class UIManager : MonoBehaviour
     [Header("Chat UI")]
     [SerializeField] private GameObject chatUI;
 
+    [Header("Race Settings")]
+    [SerializeField] private Button readyButton;
+
     [Header("In-Game HUD")] 
     [SerializeField] private GameObject inGameHUD;
     [SerializeField] private Text textSpeed;
@@ -113,6 +116,11 @@ public class UIManager : MonoBehaviour
     public Button GetUsernameNextButton()
     {
         return userNameNextButton;
+    }
+
+    public Button GetReadyButton()
+    {
+        return readyButton;
     }
 
     public InputField GetUsernameUIInputField()

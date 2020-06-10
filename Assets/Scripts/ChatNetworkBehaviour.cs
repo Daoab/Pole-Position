@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using Mirror.Examples.Basic;
 
 public class ChatNetworkBehaviour : NetworkBehaviour
 {
@@ -30,7 +31,13 @@ public class ChatNetworkBehaviour : NetworkBehaviour
     {
         return playerNames.Contains(playerName);
     }
+
+    public bool CheckLeader()
+    {
+        return playerNames.Count == 0;
+    }
     
+    [ClientRpc]
     public void RpcUpdatePlayerListUI()
     {
         for (int i = 0; i < playerListUI.Length; i++)
@@ -46,16 +53,35 @@ public class ChatNetworkBehaviour : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    public void RpcUpdateCheckReadyList(string playerName, bool isReady)
+    {
+        for (int i = 0; i < playerNames.Count; i++)
+        {
+            if (playerListUI[i].text.Equals(playerName))
+            {
+                if (isReady)
+                {
+                    playerReadyImageUI[i].color = playerReadyColor;
+                }
+                else
+                {
+                    playerReadyImageUI[i].color = playerNotReadyColor;
+                }
+            }
+        }
+    }
+
     private void Update()
     {
-        //ARREGLAR ESTA COSA FEA
-        RpcUpdatePlayerListUI();
+
+        //RpcUpdatePlayerListUI();
 
         string aux = "";
         foreach(string name in playerNames)
         {
             aux += name + " ";
         }
-        //Debug.Log(aux);
+        Debug.Log(aux);
     }
 }
