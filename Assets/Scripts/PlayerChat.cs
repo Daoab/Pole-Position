@@ -86,7 +86,7 @@ public class PlayerChat : NetworkBehaviour
     public override void OnStopClient()
     {
         base.OnStopClient();
-        chatNetworkBehaviour.RemovePlayerName(playerName);
+        chatNetworkBehaviour.RemovePlayerName(playerName, isReady);
     }
 
     public void Start()
@@ -127,9 +127,10 @@ public class PlayerChat : NetworkBehaviour
             SetPlayerName(checkedPlayerName);
         }
 
-        this.playerName = checkedPlayerName;
 
-        chatNetworkBehaviour.AddPlayerName(this.playerName);
+        chatNetworkBehaviour.AddPlayerName(checkedPlayerName);
+
+        this.playerName = checkedPlayerName;
     }
 
     [Command]
@@ -149,22 +150,42 @@ public class PlayerChat : NetworkBehaviour
     public void CmdCheckPlayersReady()
     {
         isReady = !isReady;
-        //chatNetworkBehaviour.RpcUpdateCheckReadyList(playerName, isReady);
+
+        chatNetworkBehaviour.UpdatePlayersReady(isReady);
     }
+
+    [Command]
+    public void CmdRemovePlayerName()
+    {
+        chatNetworkBehaviour.RemovePlayerName(this.playerName, this.isReady);
+    }
+
 
     private void OnDestroy()
     {
-        //chatNetworkBehaviour.RemovePlayerName(this.playerName);
+        CmdRemovePlayerName();
     }
 
-    private void NotifyPlayerNameChange(string oldValue, string newValue)
+    [Command]
+    public void CmdUpdatePlayerListUI()
     {
         chatNetworkBehaviour.RpcUpdatePlayerListUI();
     }
 
-    private void NotifyIsReadyChange(bool oldValue, bool newValue)
+    private void NotifyPlayerNameChange(string oldValue, string newValue)
+    {
+        CmdUpdatePlayerListUI();
+    }
+
+    [Command]
+    public void CmdUpdateUpdateIsReady()
     {
         chatNetworkBehaviour.RpcUpdateCheckReadyList(this.playerName, isReady);
+    }
+
+    private void NotifyIsReadyChange(bool oldValue, bool newValue)
+    {
+        CmdUpdateUpdateIsReady();
     }
 
     //IMPORTANTE: Instanciar el prefab del coche con el nombre y el color introducidos
