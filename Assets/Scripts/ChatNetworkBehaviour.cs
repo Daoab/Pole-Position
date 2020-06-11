@@ -7,9 +7,11 @@ using Mirror.Examples.Basic;
 using System.Linq;
 using System.Threading;
 
+
 public class ChatNetworkBehaviour : NetworkBehaviour
 {
-    [SyncVar(hook = nameof(PrintPlayerNames))]SyncListString playerNames = new SyncListString();
+    SyncListString playerNames = new SyncListString();
+    
     int playersReady = 0;
     [SerializeField] Text[] playerListUI;
     [SerializeField] Image[] playerReadyImageUI;
@@ -30,15 +32,22 @@ public class ChatNetworkBehaviour : NetworkBehaviour
             Interlocked.Decrement(ref playersReady);
         }
 
+        if (playersReady > 1 && playersReady >= (playerNames.Count / 2) + 1)
+        {
+            Debug.Log("LISTOS PARA COMENZAR");
+        }
+
         Debug.Log("Jugadores listos: " + playersReady);
     }
 
+    // QUITAR SI FUNCIONA PLAYERCHATLIST
     public void AddPlayerName(string playerName)
     {
         playerNames.Add(playerName);
         RpcUpdatePlayerListUI();
     }
 
+    // QUITAR SI FUNCIONA PLAYERCHATLIST
     public void RemovePlayerName(string playerName, bool isReady)
     {
         if (isReady)
@@ -54,10 +63,12 @@ public class ChatNetworkBehaviour : NetworkBehaviour
         }
     }
 
+
     public bool ContainsPlayerName(string playerName)
     {
         return playerNames.Contains(playerName);
     }
+
 
     public bool CheckLeader()
     {
@@ -67,12 +78,10 @@ public class ChatNetworkBehaviour : NetworkBehaviour
     [ClientRpc]
     public void RpcUpdatePlayerListUI()
     {
-        
-
         for (int i = 0; i < playerListUI.Length; i++)
         {
             playerListUI[i].text = defaultText;
-            playerReadyImageUI[i].color = playerNotReadyColor;
+            //playerReadyImageUI[i].color = playerNotReadyColor;
         }
 
         for(int i = 0; i < playerNames.Count; i++)
