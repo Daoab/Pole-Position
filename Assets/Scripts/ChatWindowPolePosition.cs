@@ -12,10 +12,10 @@ public class ChatWindowPolePosition : MonoBehaviour
 
     public void Awake()
     {
-        PlayerChat.OnMessage += OnPlayerMessage;
+        PlayerLobby.OnMessage += OnPlayerMessage;
     }
 
-    void OnPlayerMessage(PlayerChat player, string message)
+    void OnPlayerMessage(PlayerLobby player, string message)
     {
         string prettyMessage = player.isLocalPlayer ?
             $"<color=red>{player.playerName}: </color> {message}" :
@@ -30,7 +30,7 @@ public class ChatWindowPolePosition : MonoBehaviour
             return;
 
         // get our player
-        PlayerChat player = NetworkClient.connection.identity.GetComponent<PlayerChat>();
+        PlayerLobby player = NetworkClient.connection.identity.GetComponent<PlayerLobby>();
 
         // send a message
         player.CmdSend(chatMessage.text.Trim());

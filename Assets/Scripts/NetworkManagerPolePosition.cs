@@ -5,12 +5,12 @@ using Mirror;
 
 public class NetworkManagerPolePosition : NetworkManager
 {
-    ChatNetworkBehaviour chatNetworkBehaviour;
+    LobbyNetworkBehaviour chatNetworkBehaviour;
 
     public override void Awake()
     {
         base.Awake();
-        chatNetworkBehaviour = FindObjectOfType<ChatNetworkBehaviour>();
+        chatNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
     }
 
     public override void OnClientDisconnect(NetworkConnection conn)

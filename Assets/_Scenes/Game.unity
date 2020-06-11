@@ -405,7 +405,7 @@ GameObject:
   - component: {fileID: 1919824051}
   - component: {fileID: 1919824050}
   m_Layer: 0
-  m_Name: '@ChatNetworkBehaviour'
+  m_Name: '@LobbyNetworkBehaviour'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -423,8 +423,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: beca0ead3f0632b40bb69fa7da2692a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lastSyncTime: 0
   syncMode: 0
   syncInterval: 0.1
+  netIdentityCache: {fileID: 0}
+  playersReady: 0
   playerListUI:
   - {fileID: 6415909393553272849}
   - {fileID: 6415909393553272847}
@@ -437,8 +440,16 @@ MonoBehaviour:
   - {fileID: 6415909393553272842}
   defaultText: Waiting...
   players: {fileID: 1781366703}
-  playerReadyColor: {r: 0.28627452, g: 0.81960785, b: 0.21568628, a: 1}
-  playerNotReadyColor: {r: 0.9607843, g: 0.087431334, b: 0.18898405, a: 1}
+  playerReadyColor:
+    r: 0.28627452
+    g: 0.81960785
+    b: 0.21568628
+    a: 1
+  playerNotReadyColor:
+    r: 0.9607843
+    g: 0.087431334
+    b: 0.18898405
+    a: 1
 --- !u!114 &1919824051
 MonoBehaviour:
   m_ObjectHideFlags: 0

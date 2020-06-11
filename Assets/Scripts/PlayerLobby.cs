@@ -5,7 +5,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
 
-public class PlayerChat : NetworkBehaviour
+public class PlayerLobby : NetworkBehaviour
 {
     [SyncVar(hook = nameof(NotifyPlayerNameChange))] public string playerName = "";
     [SyncVar] public int id = 0;
@@ -15,7 +15,7 @@ public class PlayerChat : NetworkBehaviour
     [SerializeField] Color playerColor;
     SyncListFloat colorList = new SyncListFloat();
 
-    ChatNetworkBehaviour chatNetworkBehaviour;
+    LobbyNetworkBehaviour lobbyNetworkBehaviour;
 
     InputField inputField;
     Button nextButton;
@@ -28,7 +28,7 @@ public class PlayerChat : NetworkBehaviour
     GameObject colorChangeUI;
     GameObject playerListUI;
 
-    public static event Action<PlayerChat, string> OnMessage;
+    public static event Action<PlayerLobby, string> OnMessage;
 
     #region Getters y setters
 
@@ -69,7 +69,7 @@ public class PlayerChat : NetworkBehaviour
     public override void OnStopClient()
     {
         base.OnStopClient();
-        chatNetworkBehaviour.RemovePlayerName(playerName, isReady);
+        lobbyNetworkBehaviour.RemovePlayer(id);
     }
     #endregion
 
@@ -112,18 +112,18 @@ public class PlayerChat : NetworkBehaviour
         }
 
         colorList.Callback += UpdatePlayerColor;
-        chatNetworkBehaviour = FindObjectOfType<ChatNetworkBehaviour>();
+        lobbyNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
     }
 
     #region Commands y RPCs
     [Command]
     private void CmdCheckPlayerName(string playerName)
     {
-        isLeader = chatNetworkBehaviour.CheckLeader();
+        isLeader = lobbyNetworkBehaviour.CheckLeader();
 
         string checkedPlayerName = playerName;
 
-        if (chatNetworkBehaviour.ContainsPlayerName(playerName) || playerName.Trim() == "")
+        if (lobbyNetworkBehaviour.ContainsPlayerName(playerName) || playerName.Trim() == "")
         {
             checkedPlayerName = playerName + "_" + id.ToString();
             SetPlayerName(checkedPlayerName);
@@ -133,9 +133,7 @@ public class PlayerChat : NetworkBehaviour
             SetPlayerName(checkedPlayerName);
         }
 
-        chatNetworkBehaviour.AddPlayerName(checkedPlayerName);
-
-        this.playerName = checkedPlayerName;
+        lobbyNetworkBehaviour.AddPlayer(id, checkedPlayerName, isReady, isLeader, playerColor);
     }
 
     [Command]
@@ -156,46 +154,41 @@ public class PlayerChat : NetworkBehaviour
     {
         isReady = !isReady;
 
-        chatNetworkBehaviour.UpdatePlayersReady(isReady);
-    }
-
-    [Command]
-    public void CmdRemovePlayerName()
-    {
-        chatNetworkBehaviour.RemovePlayerName(this.playerName, this.isReady);
+        lobbyNetworkBehaviour.UpdatePlayerIsReady(id, isReady);
+        lobbyNetworkBehaviour.UpdateNumberOfPlayersReady(isReady);
+        lobbyNetworkBehaviour.RpcUpdatePlayerListUI();
     }
 
     [Command]
     public void CmdUpdatePlayerListUI()
     {
-        chatNetworkBehaviour.RpcUpdatePlayerListUI();
+        lobbyNetworkBehaviour.RpcUpdatePlayerListUI();
     }
+
+    #endregion
+
+    #region Hooks
 
     private void NotifyPlayerNameChange(string oldValue, string newValue)
     {
         CmdUpdatePlayerListUI();
     }
 
-    [Command]
-    public void CmdUpdateUpdateIsReady()
-    {
-        chatNetworkBehaviour.RpcUpdateCheckReadyList(this.playerName, isReady);
-    }
-    #endregion
-
-    #region Hooks
     private void NotifyIsReadyChange(bool oldValue, bool newValue)
     {
-        CmdUpdateUpdateIsReady();
+        CmdUpdatePlayerListUI();
     }
 
     private void UpdatePlayerColor(SyncListFloat.Operation op, int index, float oldValue, float newValue)
     {
-        this.playerColor[index] = newValue;
+        playerColor[index] = newValue;
 
         // Si se ha terminado de sincronizar el color del jugador actualiza el modelo del coche
-        if(index == 3 && isLocalPlayer)
+        if (index == 3 && isLocalPlayer)
+        {
+            //lobbyNetworkBehaviour.UpdatePlayerColor(id, playerColor);
             uIManager.UpdateCarPreviewColor(playerColor);
+        }
     }
 #endregion
 
