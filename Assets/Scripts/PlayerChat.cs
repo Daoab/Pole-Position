@@ -10,8 +10,10 @@ public class PlayerChat : NetworkBehaviour
     [SyncVar(hook = nameof(NotifyPlayerNameChange))] public string playerName = "";
     [SyncVar] public int id = 0;
     [SyncVar(hook = nameof(NotifyIsReadyChange))] public bool isReady = false;
+
     [SyncVar] public bool isLeader = false;
-    [SyncVar] [SerializeField] Color playerColor;
+    [SerializeField] Color playerColor;
+    SyncListFloat colorList = new SyncListFloat();
 
     ChatNetworkBehaviour chatNetworkBehaviour;
 
@@ -19,6 +21,7 @@ public class PlayerChat : NetworkBehaviour
     Button nextButton;
     Button readyButton;
 
+    UIManager uIManager;
     GameObject usernameUI;
     GameObject ingameUI;
     GameObject chatUI;
@@ -26,6 +29,8 @@ public class PlayerChat : NetworkBehaviour
     GameObject playerListUI;
 
     public static event Action<PlayerChat, string> OnMessage;
+
+    #region Getters y setters
 
     public void SetPlayerName(string playerName)
     {
@@ -37,25 +42,40 @@ public class PlayerChat : NetworkBehaviour
         return this.playerName;
     }
 
-    public void SetPlayerColor(Color color)
+    [Command]
+    public void CmdSetPlayerColor(float[] c)
     {
-        this.playerColor = color;
+        colorList.Clear();
+
+        for (int i = 0; i < c.Length; i++)
+        {
+            colorList.Add(c[i]);
+        }
     }
 
     public Color GetPlayerColor()
     {
         return this.playerColor;
     }
+    #endregion
 
+    #region Setup Mirror
     public override void OnStartServer()
     {
         base.OnStartServer();
         id = connectionToClient.connectionId;
     }
 
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+        chatNetworkBehaviour.RemovePlayerName(playerName, isReady);
+    }
+    #endregion
+
     private void GetUIReferences()
     {
-        UIManager uIManager = FindObjectOfType<UIManager>();
+        uIManager = FindObjectOfType<UIManager>();
 
         usernameUI = uIManager.GetUsernameUIReference();
         ingameUI = uIManager.GetInGameUIReference();
@@ -66,8 +86,9 @@ public class PlayerChat : NetworkBehaviour
 
         readyButton = uIManager.GetReadyButton();
 
-        inputField.onEndEdit.AddListener((text) => CmdCheckPlayerName(inputField.text));
-        nextButton.onClick.AddListener(() => ActivateLobbyWindow());
+        nextButton.onClick.AddListener(() => CmdCheckPlayerName(inputField.text));
+        nextButton.onClick.AddListener(() => uIManager.ActivateLobbyWindow());
+
         readyButton.onClick.AddListener(() => CmdCheckPlayersReady());
 
         colorChangeUI = uIManager.GetColorChangeButtons();
@@ -75,20 +96,14 @@ public class PlayerChat : NetworkBehaviour
 
         foreach (Button colorButton in colorChangeButtons)
         {
-            Color color = colorButton.GetComponent<ColorChangeButton>().GetButtonColor();
-            colorButton.onClick.AddListener(() => SetPlayerColor(color));
-            colorButton.onClick.AddListener(() => uIManager.UpdateCarPreviewColor(playerColor));
+            float[] color = colorButton.GetComponent<ColorChangeButton>().GetButtonColor();
+
+            colorButton.onClick.AddListener(() => CmdSetPlayerColor(color));
         }
 
         playerListUI = uIManager.GetPlayerListUI();
     }
-
-    public override void OnStopClient()
-    {
-        base.OnStopClient();
-        chatNetworkBehaviour.RemovePlayerName(playerName, isReady);
-    }
-
+    
     public void Start()
     {
         if (isLocalPlayer)
@@ -96,20 +111,11 @@ public class PlayerChat : NetworkBehaviour
             GetUIReferences();
         }
 
-        Debug.Log(usernameUI);
-
+        colorList.Callback += UpdatePlayerColor;
         chatNetworkBehaviour = FindObjectOfType<ChatNetworkBehaviour>();
     }
 
-    public void ActivateLobbyWindow()
-    {
-        usernameUI.SetActive(false);
-        colorChangeUI.SetActive(true);
-        chatUI.SetActive(true);
-        playerListUI.SetActive(true);
-        readyButton.gameObject.SetActive(true);
-    }
-
+    #region Commands y RPCs
     [Command]
     private void CmdCheckPlayerName(string playerName)
     {
@@ -117,7 +123,7 @@ public class PlayerChat : NetworkBehaviour
 
         string checkedPlayerName = playerName;
 
-        if (chatNetworkBehaviour.ContainsPlayerName(playerName))
+        if (chatNetworkBehaviour.ContainsPlayerName(playerName) || playerName.Trim() == "")
         {
             checkedPlayerName = playerName + "_" + id.ToString();
             SetPlayerName(checkedPlayerName);
@@ -126,7 +132,6 @@ public class PlayerChat : NetworkBehaviour
         {
             SetPlayerName(checkedPlayerName);
         }
-
 
         chatNetworkBehaviour.AddPlayerName(checkedPlayerName);
 
@@ -160,12 +165,6 @@ public class PlayerChat : NetworkBehaviour
         chatNetworkBehaviour.RemovePlayerName(this.playerName, this.isReady);
     }
 
-
-    private void OnDestroy()
-    {
-        CmdRemovePlayerName();
-    }
-
     [Command]
     public void CmdUpdatePlayerListUI()
     {
@@ -182,11 +181,23 @@ public class PlayerChat : NetworkBehaviour
     {
         chatNetworkBehaviour.RpcUpdateCheckReadyList(this.playerName, isReady);
     }
+    #endregion
 
+    #region Hooks
     private void NotifyIsReadyChange(bool oldValue, bool newValue)
     {
         CmdUpdateUpdateIsReady();
     }
+
+    private void UpdatePlayerColor(SyncListFloat.Operation op, int index, float oldValue, float newValue)
+    {
+        this.playerColor[index] = newValue;
+
+        // Si se ha terminado de sincronizar el color del jugador actualiza el modelo del coche
+        if(index == 3 && isLocalPlayer)
+            uIManager.UpdateCarPreviewColor(playerColor);
+    }
+#endregion
 
     //IMPORTANTE: Instanciar el prefab del coche con el nombre y el color introducidos
 }

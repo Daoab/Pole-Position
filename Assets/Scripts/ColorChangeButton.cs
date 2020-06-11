@@ -8,9 +8,10 @@ public class ColorChangeButton : MonoBehaviour
     [SerializeField] Color color;
     [SerializeField] float colorUIBrigtness = 0.2f;
 
-    public Color GetButtonColor()
+    public float[] GetButtonColor()
     {
-        return color;
+        float[] c = { color.r, color.g, color.b, color.a };
+        return c;
     }
 
     public void SetColor(Color color)

@@ -9,7 +9,7 @@ using System.Threading;
 
 public class ChatNetworkBehaviour : NetworkBehaviour
 {
-    SyncListString playerNames;
+    [SyncVar(hook = nameof(PrintPlayerNames))]SyncListString playerNames = new SyncListString();
     int playersReady = 0;
     [SerializeField] Text[] playerListUI;
     [SerializeField] Image[] playerReadyImageUI;
@@ -46,7 +46,7 @@ public class ChatNetworkBehaviour : NetworkBehaviour
             Interlocked.Decrement(ref playersReady);
         }
 
-        playerNames.Remove(playerName);
+        playerNames.RemoveAt(playerNames.IndexOf(playerName));
 
         if (playerNames.Count > 1)
         {
@@ -59,7 +59,6 @@ public class ChatNetworkBehaviour : NetworkBehaviour
         return playerNames.Contains(playerName);
     }
 
-
     public bool CheckLeader()
     {
         return playerNames.Count == 0;
@@ -68,15 +67,7 @@ public class ChatNetworkBehaviour : NetworkBehaviour
     [ClientRpc]
     public void RpcUpdatePlayerListUI()
     {
-
-        string aux = "";
-
-        for (int i = 0; i < playerNames.Count; i++)
-        {
-            aux += playerNames[i] + " ";
-        }
-
-        players.text = aux;
+        
 
         for (int i = 0; i < playerListUI.Length; i++)
         {
@@ -86,9 +77,7 @@ public class ChatNetworkBehaviour : NetworkBehaviour
 
         for(int i = 0; i < playerNames.Count; i++)
         {
-            Debug.Log(playerNames[i] + " Estoy en el segundo for");
             playerListUI[i].text = playerNames[i];
-            playerReadyImageUI[i].color = playerNotReadyColor;
         }
     }
 
@@ -111,16 +100,33 @@ public class ChatNetworkBehaviour : NetworkBehaviour
         }
     }
 
+    private void Start()
+    {
+        playerNames.Callback += PrintPlayerNames;
+    }
+
     private void Update()
     {
-
-        //RpcUpdatePlayerListUI();
-
+        /*
         string aux = "";
         foreach(string name in playerNames)
         {
             aux += name + " ";
         }
+
         Debug.Log(aux);
+        */
+    }
+
+    private void PrintPlayerNames(SyncListString.Operation op, int index, string oldItem, string newItem)
+    {
+        string aux = "";
+
+        foreach(string name in playerNames)
+        {
+            aux += name + " ";
+        }
+
+        players.text = aux;
     }
 }

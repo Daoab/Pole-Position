@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
 
     private NetworkManagerPolePosition m_NetworkManager;
 
+    #region UIReferences
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
     [SerializeField] private Button buttonHost;
     [SerializeField] private Button buttonClient;
@@ -42,6 +43,7 @@ public class UIManager : MonoBehaviour
     [Space]
 
     [SerializeField] private GameObject carBody;
+    #endregion
 
     private void Awake()
     {
@@ -67,6 +69,15 @@ public class UIManager : MonoBehaviour
         inGameHUD.SetActive(false);
         userNameUI.SetActive(false);
         chatUI.SetActive(false);
+    }
+
+    public void ActivateLobbyWindow()
+    {
+        userNameUI.SetActive(false);
+        colorChangeButtons.SetActive(true);
+        chatUI.SetActive(true);
+        playerListUI.SetActive(true);
+        readyButton.gameObject.SetActive(true);
     }
 
     private void ActivateUsernameUI()
