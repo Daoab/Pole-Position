@@ -7,9 +7,9 @@ using UnityEngine.UI;
 
 public class PlayerLobby : NetworkBehaviour
 {
-    [SyncVar(hook = nameof(NotifyPlayerNameChange))] public string playerName = "";
+    [SyncVar] public string playerName = "";
     [SyncVar] public int id = 0;
-    [SyncVar(hook = nameof(NotifyIsReadyChange))] public bool isReady = false;
+    [SyncVar] public bool isReady = false;
 
     [SyncVar] public bool isLeader = false;
     [SerializeField] Color playerColor;
@@ -30,35 +30,6 @@ public class PlayerLobby : NetworkBehaviour
 
     public static event Action<PlayerLobby, string> OnMessage;
 
-    #region Getters y setters
-
-    public void SetPlayerName(string playerName)
-    {
-        this.playerName = playerName;
-    }
-
-    public string GetPlayerName()
-    {
-        return this.playerName;
-    }
-
-    [Command]
-    public void CmdSetPlayerColor(float[] c)
-    {
-        colorList.Clear();
-
-        for (int i = 0; i < c.Length; i++)
-        {
-            colorList.Add(c[i]);
-        }
-    }
-
-    public Color GetPlayerColor()
-    {
-        return this.playerColor;
-    }
-    #endregion
-
     #region Setup Mirror
     public override void OnStartServer()
     {
@@ -72,6 +43,17 @@ public class PlayerLobby : NetworkBehaviour
         lobbyNetworkBehaviour.RemovePlayer(id);
     }
     #endregion
+
+    public void Start()
+    {
+        if (isLocalPlayer)
+        {
+            GetUIReferences();
+        }
+
+        colorList.Callback += UpdatePlayerColor;
+        lobbyNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
+    }
 
     private void GetUIReferences()
     {
@@ -103,17 +85,6 @@ public class PlayerLobby : NetworkBehaviour
 
         playerListUI = uIManager.GetPlayerListUI();
     }
-    
-    public void Start()
-    {
-        if (isLocalPlayer)
-        {
-            GetUIReferences();
-        }
-
-        colorList.Callback += UpdatePlayerColor;
-        lobbyNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
-    }
 
     #region Commands y RPCs
     [Command]
@@ -126,14 +97,11 @@ public class PlayerLobby : NetworkBehaviour
         if (lobbyNetworkBehaviour.ContainsPlayerName(playerName) || playerName.Trim() == "")
         {
             checkedPlayerName = playerName + "_" + id.ToString();
-            SetPlayerName(checkedPlayerName);
-        }
-        else
-        {
-            SetPlayerName(checkedPlayerName);
         }
 
-        lobbyNetworkBehaviour.AddPlayer(id, checkedPlayerName, isReady, isLeader, playerColor);
+        this.playerName = checkedPlayerName;
+
+        lobbyNetworkBehaviour.AddPlayer(id, this.playerName, isReady, isLeader, playerColor);
     }
 
     [Command]
@@ -153,32 +121,22 @@ public class PlayerLobby : NetworkBehaviour
     public void CmdCheckPlayersReady()
     {
         isReady = !isReady;
-
         lobbyNetworkBehaviour.UpdatePlayerIsReady(id, isReady);
-        lobbyNetworkBehaviour.UpdateNumberOfPlayersReady(isReady);
-        lobbyNetworkBehaviour.RpcUpdatePlayerListUI();
     }
 
     [Command]
-    public void CmdUpdatePlayerListUI()
+    public void CmdSetPlayerColor(float[] c)
     {
-        lobbyNetworkBehaviour.RpcUpdatePlayerListUI();
-    }
+        colorList.Clear();
 
+        for (int i = 0; i < c.Length; i++)
+        {
+            colorList.Add(c[i]);
+        }
+    }
     #endregion
 
     #region Hooks
-
-    private void NotifyPlayerNameChange(string oldValue, string newValue)
-    {
-        CmdUpdatePlayerListUI();
-    }
-
-    private void NotifyIsReadyChange(bool oldValue, bool newValue)
-    {
-        CmdUpdatePlayerListUI();
-    }
-
     private void UpdatePlayerColor(SyncListFloat.Operation op, int index, float oldValue, float newValue)
     {
         playerColor[index] = newValue;
@@ -186,11 +144,11 @@ public class PlayerLobby : NetworkBehaviour
         // Si se ha terminado de sincronizar el color del jugador actualiza el modelo del coche
         if (index == 3 && isLocalPlayer)
         {
-            //lobbyNetworkBehaviour.UpdatePlayerColor(id, playerColor);
+            lobbyNetworkBehaviour.UpdatePlayerColor(id, playerColor);
             uIManager.UpdateCarPreviewColor(playerColor);
         }
     }
-#endregion
+    #endregion
 
     //IMPORTANTE: Instanciar el prefab del coche con el nombre y el color introducidos
 }

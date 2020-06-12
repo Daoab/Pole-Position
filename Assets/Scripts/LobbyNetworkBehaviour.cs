@@ -7,27 +7,15 @@ using Mirror.Examples.Basic;
 using System.Linq;
 using System.Threading;
 
-//[System.Serializable]
-public class PlayerData
+[System.Serializable]
+public struct PlayerData
 {
-    public int id { get; set; }
-    public string name { get; set; }
-    public bool isReady { get; set; }
-    public bool isLeader { get; set; }
-    //public Color color { get; set; }
-
-    public PlayerData(int id, string name, bool isReady, bool isLeader)
-    {
-        this.id = id;
-        this.name = name;
-        this.isReady = isReady;
-        this.isLeader = isLeader;
-        //this.color = color;
-    }
-
-    public PlayerData(){}
+    public int id;
+    public string name;
+    public bool isReady;
+    public bool isLeader;
+    public Color color;
 }
-
 
 [System.Serializable]
 public class SyncListPlayerData : SyncList<PlayerData> {}
@@ -44,6 +32,12 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
     [SerializeField] Color playerReadyColor;
     [SerializeField] Color playerNotReadyColor;
+
+    private void Start()
+    {
+        playerDataList.Callback += PrintPlayerNames;
+        playerDataList.Callback += UpdateUI;
+    }
 
     public int FindPlayerDataIndex(int id)
     {
@@ -75,29 +69,45 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         Debug.Log("Jugadores listos: " + playersReady);
     }
 
-
     public void UpdatePlayerIsReady(int id, bool isReady)
     {
         int index = FindPlayerDataIndex(id);
-        playerDataList[index].isReady = isReady;
 
-        RpcUpdatePlayerListUI();
+        PlayerData newPlayerData = playerDataList[index];
+        newPlayerData.isReady = isReady;
+        
+        playerDataList[index] = newPlayerData;
+
+        UpdateNumberOfPlayersReady(isReady);
+
+        UpdatePlayerListUI();
     }
 
-    /*
     public void UpdatePlayerColor(int id, Color color)
     {
         int index = FindPlayerDataIndex(id);
-        playerDataList[index].color = color;
+
+        //La synclist solo se actualiza si le metemos una struct nueva, no podemos modificar la lista directamente
+        PlayerData newPlayerData = playerDataList[index];
+
+        newPlayerData.color = color;
+
+        playerDataList[index] = newPlayerData;
     }
-    */
 
     public void AddPlayer(int id, string name, bool isReady, bool isLeader, Color color)
     {
-        PlayerData p = new PlayerData(id, name, isReady, isLeader);
+        PlayerData p = new PlayerData
+        {
+            id = id, 
+            name = name, 
+            isReady = isReady, 
+            isLeader = isLeader, 
+            color = color
+        };
 
         playerDataList.Add(p);
-        RpcUpdatePlayerListUI();
+        UpdatePlayerListUI(); 
     }
 
     public void RemovePlayer(int id)
@@ -115,10 +125,9 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
         if (playerDataList.Count > 1)
         {
-            RpcUpdatePlayerListUI();
+            UpdatePlayerListUI();
         }
     }
-
 
     public bool ContainsPlayerName(string playerName)
     {
@@ -133,15 +142,13 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         return false;
     }
 
-
     public bool CheckLeader()
     {
         return playerDataList.Count == 0;
     }
     
-    [ClientRpc]
-    public void RpcUpdatePlayerListUI()
-    {
+    public void UpdatePlayerListUI()
+    {       
         for (int i = 0; i < playerListUI.Length; i++)
         {
             playerListUI[i].text = defaultText;
@@ -155,25 +162,13 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
                 playerReadyImageUI[i].color = playerReadyColor;
         }
     }
-
-    private void Update()
+    
+    public void UpdateUI(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
     {
-        string aux = "";
-
-        for (int i = 0; i < playerDataList.Count; i++)
-        {
-            aux += playerDataList[i].isReady.ToString() + " ";
-        }
-
-        Debug.Log(aux);
+        UpdatePlayerListUI();
     }
 
-    private void Start()
-    {
-        playerDataList.Callback += PrintPlayerNames;
-    }
-
-    private void PrintPlayerNames(SyncListPlayerData.Operation op, int index, PlayerData oldItem, PlayerData newItem)
+    private void PrintPlayerNames(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
     {
         string aux = "";
 
