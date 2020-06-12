@@ -22,11 +22,6 @@ public class PlayerLobby : NetworkBehaviour
     Button readyButton;
 
     UIManager uIManager;
-    GameObject usernameUI;
-    GameObject ingameUI;
-    GameObject chatUI;
-    GameObject colorChangeUI;
-    GameObject playerListUI;
 
     public static event Action<PlayerLobby, string> OnMessage;
 
@@ -55,26 +50,24 @@ public class PlayerLobby : NetworkBehaviour
         lobbyNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
     }
 
+    //Se asocian listeners a los elementos de la interfaz
     private void GetUIReferences()
     {
         uIManager = FindObjectOfType<UIManager>();
 
-        usernameUI = uIManager.GetUsernameUIReference();
-        ingameUI = uIManager.GetInGameUIReference();
-        chatUI = uIManager.GetChatReference();
-
         inputField = uIManager.GetUsernameUIInputField();
-        nextButton = uIManager.GetUsernameNextButton();
 
-        readyButton = uIManager.GetReadyButton();
+        nextButton = uIManager.GetUsernameNextButton();
 
         nextButton.onClick.AddListener(() => CmdCheckPlayerName(inputField.text));
         nextButton.onClick.AddListener(() => uIManager.ActivateLobbyWindow());
         nextButton.onClick.AddListener(() => ActivateRaceSettings());
 
+        readyButton = uIManager.GetReadyButton();
         readyButton.onClick.AddListener(() => CmdCheckPlayersReady());
 
-        colorChangeUI = uIManager.GetColorChangeButtons();
+        //Se recorren cada uno de los botones de cambio de color,
+        //y se le asocia un listener que cambia el color del coche mostrado en el menú
         Button[] colorChangeButtons = uIManager.GetColorChangeButtons().GetComponentsInChildren<Button>();
 
         foreach (Button colorButton in colorChangeButtons)
@@ -83,10 +76,9 @@ public class PlayerLobby : NetworkBehaviour
 
             colorButton.onClick.AddListener(() => CmdSetPlayerColor(color));
         }
-
-        playerListUI = uIManager.GetPlayerListUI();
     }
 
+    //Se muestran los ajustos de la carrera al jugador host en su máquina
     private void ActivateRaceSettings()
     {
         if (isLocalPlayer && isLeader)
@@ -106,6 +98,9 @@ public class PlayerLobby : NetworkBehaviour
 
     #region Commands y RPCs
     [Command]
+
+    //Se comprueba en el servidor si el nombre que el jugador ha introducido está disponible.
+    //Si no está disponible, se coge ese mismo nombre, y se le añade el id del jugador al final
     private void CmdCheckPlayerName(string playerName)
     {
         isLeader = lobbyNetworkBehaviour.CheckLeader();
@@ -119,9 +114,10 @@ public class PlayerLobby : NetworkBehaviour
 
         this.playerName = checkedPlayerName;
 
-        lobbyNetworkBehaviour.AddPlayer(/*id, this.playerName, isReady, isLeader, playerColor*/ this);
+        lobbyNetworkBehaviour.AddPlayer(this);
     }
 
+    //Cuando se pulsa el botón de send en el chat, se manda el mensaje al servidor para procesarlo
     [Command]
     public void CmdSend(string message)
     {
@@ -129,12 +125,15 @@ public class PlayerLobby : NetworkBehaviour
             RpcReceive(message.Trim());
     }
 
+    //Cuando el mensaje del chat se ha procesado, se llama al Selegate On Message de los jugadores
+    //para mostrar el mensaje procesado por el chat
     [ClientRpc]
     public void RpcReceive(string message)
     {
         OnMessage?.Invoke(this, message);
     }
 
+    //Cuando se pulsa el botón de ready, se cambia el estado de ready del jugador, y se actualiza en el LobbyNetworkBehaviour
     [Command]
     public void CmdCheckPlayersReady()
     {
@@ -142,6 +141,8 @@ public class PlayerLobby : NetworkBehaviour
         lobbyNetworkBehaviour.UpdatePlayerIsReady(id, isReady);
     }
 
+    //Para la correcta sincronización del color entre los jugadores, se guarda en una SyncList de floats,
+    //ya que el propio color que ofrece Unity no está soportado
     [Command]
     public void CmdSetPlayerColor(float[] c)
     {
@@ -155,6 +156,10 @@ public class PlayerLobby : NetworkBehaviour
     #endregion
 
     #region Hooks
+
+    //Se llama cuando se modifica la SyncList de floats que representa el color de los jugadores.
+    //Su función es actualizar la información de color en el LobbyNetworkBehaviour, 
+    //y actualiza también el color del coche mostrado en el menú.
     private void UpdatePlayerColor(SyncListFloat.Operation op, int index, float oldValue, float newValue)
     {
         playerColor[index] = newValue;
@@ -167,6 +172,7 @@ public class PlayerLobby : NetworkBehaviour
         }
     }
 
+    //Se muestra al jugador host el botón de iniciar la partida cuando la mayoría de jugadores están listos
     public void UpdateGoButtonState(bool allPlayersReady)
     {
         if (isLocalPlayer && hasAuthority)

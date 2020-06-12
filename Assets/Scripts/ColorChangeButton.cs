@@ -21,6 +21,7 @@ public class ColorChangeButton : MonoBehaviour
 
     private void Awake()
     {
+        //Se muestra el color algo más brillante en la interfaz
         gameObject.GetComponent<Image>().color = color + new Color(colorUIBrigtness, colorUIBrigtness, colorUIBrigtness, 1.0f);
     }
 }

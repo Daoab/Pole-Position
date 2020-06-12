@@ -15,6 +15,7 @@ public class ChatWindowPolePosition : MonoBehaviour
         PlayerLobby.OnMessage += OnPlayerMessage;
     }
 
+    //Muestra por el chat el mensaje que han mandado los jugadores, y cambia el nombre del jugador en función de si es el local o no
     void OnPlayerMessage(PlayerLobby player, string message)
     {
         string prettyMessage = player.isLocalPlayer ?

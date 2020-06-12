@@ -45,6 +45,7 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         playerDataList.Callback += UpdateUI;
     }
 
+    //Devuelve el índice de los datos asociados a un jugador según su id, y si no lo encuentra devuelve -1
     public int FindPlayerDataIndex(int id)
     {
         for (int i = 0; i < playerDataList.Count; i++)
@@ -52,13 +53,14 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
             if (playerDataList[i].id == id)
                 return i;
         }
-
         return -1;
     }
 
+    #region Updates
+
+    //Se comprueba el número de jugadores listos, y si se puede empezar la partida
     public void UpdateNumberOfPlayersReady(bool playerReady)
     {
-
         updatePlayersReady.Wait();
 
         if (playerReady)
@@ -72,26 +74,27 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
         updatePlayersReady.Release();
 
+        //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
         if (playersReady > 1 && playersReady >= (playerDataList.Count / 2) + 1)
         {
-            Debug.Log("LISTOS PARA COMENZAR");
             allPlayersReady = true;
         }
         else
         {
             allPlayersReady = false;
         }
-
-        Debug.Log("Jugadores listos: " + playersReady);
     }
 
+    //Actualiza el valor isReady de un jugador según su id
     public void UpdatePlayerIsReady(int id, bool isReady)
     {
         int index = FindPlayerDataIndex(id);
 
+        //No se puede modificar la estructura de la SyncList,
+        //ya que si no no se modificaría su dirty bit y no se modificaría en el resto de clientes
         PlayerData newPlayerData = playerDataList[index];
         newPlayerData.isReady = isReady;
-        
+
         playerDataList[index] = newPlayerData;
 
         UpdateNumberOfPlayersReady(isReady);
@@ -99,6 +102,7 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         UpdatePlayerListUI();
     }
 
+    //Se actualiza el color de un jugador según su id
     public void UpdatePlayerColor(int id, Color color)
     {
         int index = FindPlayerDataIndex(id);
@@ -111,7 +115,27 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         playerDataList[index] = newPlayerData;
     }
 
-    public void AddPlayer(/*int id, string name, bool isReady, bool isLeader, Color color,*/ PlayerLobby player)
+    //Se muestra en la interfaz el nombre de los jugadores conectados, y si están listos o no
+    public void UpdatePlayerListUI()
+    {
+        for (int i = 0; i < playerListUI.Length; i++)
+        {
+            playerListUI[i].text = defaultText;
+            playerReadyImageUI[i].color = playerNotReadyColor;
+        }
+
+        for (int i = 0; i < playerDataList.Count; i++)
+        {
+            playerListUI[i].text = playerDataList[i].name;
+            if (playerDataList[i].isReady)
+                playerReadyImageUI[i].color = playerReadyColor;
+        }
+    }
+    #endregion
+
+    #region SyncList Methods
+
+    public void AddPlayer(PlayerLobby player)
     {
         PlayerData p = new PlayerData
         {
@@ -165,36 +189,16 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         return false;
     }
 
+    //El jugador que ha entrado primero a la partida es el líder de la misma
+    //Puede modificar las opciones de la carrera y empezar la partida
     public bool CheckLeader()
     {
         return playerDataList.Count == 0;
     }
-    
-    public void UpdatePlayerListUI()
-    {       
-        for (int i = 0; i < playerListUI.Length; i++)
-        {
-            playerListUI[i].text = defaultText;
-            playerReadyImageUI[i].color = playerNotReadyColor;
-        }
 
-        for(int i = 0; i < playerDataList.Count; i++)
-        {
-            playerListUI[i].text = playerDataList[i].name;
-            if(playerDataList[i].isReady)
-                playerReadyImageUI[i].color = playerReadyColor;
-        }
-    }
-    
-    public void UpdateUI(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
-    {
-        UpdatePlayerListUI();
-    }
+    #endregion
 
-    public SyncListPlayerData GetPlayersData()
-    {
-        return playerDataList;
-    }
+    #region Hooks
 
     private void PrintPlayerNames(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
     {
@@ -208,8 +212,17 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         players.text = aux;
     }
 
+    //Cuando se actualiza allPlayersReady se comprueba si se puede empezar la partida, y por tanto si se puede mostrar el botón de go
     public void NotifyPlayersReady(bool oldValue, bool newValue)
     {
         playerLeader.UpdateGoButtonState(newValue);
     }
+
+    //Cuando se actualiza la lista de datos de los jugadores, se actualiza también la interfaz
+    public void UpdateUI(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
+    {
+        UpdatePlayerListUI();
+    }
+
+    #endregion
 }

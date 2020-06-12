@@ -62,60 +62,7 @@ public class UIManager : MonoBehaviour
         ActivateMainMenu();
     }
 
-    public void UpdateSpeed(int speed)
-    {
-        textSpeed.text = "Speed " + speed + " Km/h";
-    }
-
-    private void ActivateMainMenu()
-    {
-        mainMenu.SetActive(true);
-        inGameHUD.SetActive(false);
-        userNameUI.SetActive(false);
-        chatUI.SetActive(false);
-    }
-
-    public void ActivateLobbyWindow()
-    {
-        userNameUI.SetActive(false);
-        colorChangeButtons.SetActive(true);
-        chatUI.SetActive(true);
-        playerListUI.SetActive(true);
-        readyButton.gameObject.SetActive(true);
-    }
-
-    private void ActivateUsernameUI()
-    {
-        mainMenu.SetActive(false);
-        //inGameHUD.SetActive(true);
-        //chatUI.SetActive(false);
-        userNameUI.SetActive(true);
-    }
-
-    public void ActivateRaceSettings()
-    {
-        lapsUI.gameObject.SetActive(true);
-    }
-
-    public void ActivateGoButton()
-    {
-        goButton.gameObject.SetActive(true);
-
-        goButton.onClick.AddListener(() => raceNetWorkBehaviour.StartRace(FindObjectOfType<LobbyNetworkBehaviour>().GetPlayersData()));
-    }
-
-    public void DeactivateGoButton()
-    {
-        goButton.onClick.RemoveAllListeners();
-
-        goButton.gameObject.SetActive(false);
-    }
-
-    public void UpdateLapsCounter(int numLaps)
-    {
-        lapsUI.GetComponentInChildren<Text>().text = "Laps: " + numLaps.ToString();
-    }
-
+    #region Setup Mirror
     private void StartHost()
     {
         m_NetworkManager.StartHost();
@@ -134,14 +81,73 @@ public class UIManager : MonoBehaviour
         m_NetworkManager.StartServer();
         ActivateUsernameUI();
     }
+    #endregion
+
+    #region Activate/Deactivate UI
+    public void ActivateLobbyWindow()
+    {
+        userNameUI.SetActive(false);
+        colorChangeButtons.SetActive(true);
+        chatUI.SetActive(true);
+        playerListUI.SetActive(true);
+        readyButton.gameObject.SetActive(true);
+    }
+
+    private void ActivateUsernameUI()
+    {
+        mainMenu.SetActive(false);
+        userNameUI.SetActive(true);
+    }
+
+    public void ActivateRaceSettings()
+    {
+        lapsUI.gameObject.SetActive(true);
+    }
+
+    public void ActivateGoButton()
+    {
+        goButton.gameObject.SetActive(true);
+
+        goButton.onClick.AddListener(() => raceNetWorkBehaviour.StartRace());
+    }
+
+    public void DeactivateGoButton()
+    {
+        goButton.onClick.RemoveAllListeners();
+
+        goButton.gameObject.SetActive(false);
+    }
+
+    private void ActivateMainMenu()
+    {
+        mainMenu.SetActive(true);
+        inGameHUD.SetActive(false);
+        userNameUI.SetActive(false);
+        chatUI.SetActive(false);
+    }
+    #endregion
+
+    #region Update UI
+    public void UpdateSpeed(int speed)
+    {
+        textSpeed.text = "Speed " + speed + " Km/h";
+    }
+
+    public void UpdateLapsCounter(int numLaps)
+    {
+        lapsUI.GetComponentInChildren<Text>().text = "Laps: " + numLaps.ToString();
+    }
 
     public void UpdateCarPreviewColor(Color color)
     {
         Material carMaterial = carBody.GetComponent<MeshRenderer>().materials[1];
         carMaterial.color = color;
     }
+    #endregion
 
-    #region UIReferences
+    //Se necesitan getters de los elementos de la interfaz en caso de que se quiera obtener alguno,
+    //ya que Unity no devuelve objetos desactivados cuando son buscados
+    #region Getters UI
     public GameObject GetChatReference()
     {
         return chatUI;
