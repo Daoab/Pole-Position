@@ -12,7 +12,7 @@ public class PlayerLobby : NetworkBehaviour
     [SyncVar] public bool isReady = false;
 
     [SyncVar] public bool isLeader = false;
-    [SerializeField] Color playerColor;
+    [SerializeField] public Color playerColor;
     SyncListFloat colorList = new SyncListFloat();
 
     LobbyNetworkBehaviour lobbyNetworkBehaviour;
@@ -70,6 +70,7 @@ public class PlayerLobby : NetworkBehaviour
 
         nextButton.onClick.AddListener(() => CmdCheckPlayerName(inputField.text));
         nextButton.onClick.AddListener(() => uIManager.ActivateLobbyWindow());
+        nextButton.onClick.AddListener(() => ActivateRaceSettings());
 
         readyButton.onClick.AddListener(() => CmdCheckPlayersReady());
 
@@ -84,6 +85,23 @@ public class PlayerLobby : NetworkBehaviour
         }
 
         playerListUI = uIManager.GetPlayerListUI();
+    }
+
+    private void ActivateRaceSettings()
+    {
+        if (isLocalPlayer && isLeader)
+        {
+            uIManager.ActivateRaceSettings();
+        }
+    }
+
+    public void InstantiateCar()
+    {
+        //Crear coche
+
+        //Modificar parámetros
+
+        //Llamar a networkmanager para que instancie coche
     }
 
     #region Commands y RPCs
@@ -101,7 +119,7 @@ public class PlayerLobby : NetworkBehaviour
 
         this.playerName = checkedPlayerName;
 
-        lobbyNetworkBehaviour.AddPlayer(id, this.playerName, isReady, isLeader, playerColor);
+        lobbyNetworkBehaviour.AddPlayer(/*id, this.playerName, isReady, isLeader, playerColor*/ this);
     }
 
     [Command]
@@ -146,6 +164,21 @@ public class PlayerLobby : NetworkBehaviour
         {
             lobbyNetworkBehaviour.UpdatePlayerColor(id, playerColor);
             uIManager.UpdateCarPreviewColor(playerColor);
+        }
+    }
+
+    public void UpdateGoButtonState(bool allPlayersReady)
+    {
+        if (isLocalPlayer && hasAuthority)
+        {
+            if (allPlayersReady)
+            {
+                uIManager.ActivateGoButton();
+            }
+            else
+            {
+                uIManager.DeactivateGoButton();
+            }
         }
     }
     #endregion

@@ -24,6 +24,8 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 {
     private SyncListPlayerData playerDataList = new SyncListPlayerData();
 
+    SemaphoreSlim updatePlayersReady = new SemaphoreSlim(1, 1);
+
     int playersReady = 0;
     [SerializeField] Text[] playerListUI;
     [SerializeField] Image[] playerReadyImageUI;
@@ -32,6 +34,10 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
     [SerializeField] Color playerReadyColor;
     [SerializeField] Color playerNotReadyColor;
+
+    PlayerLobby playerLeader;
+
+    [SyncVar (hook = nameof(NotifyPlayersReady))] public bool allPlayersReady;
 
     private void Start()
     {
@@ -52,18 +58,28 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
     public void UpdateNumberOfPlayersReady(bool playerReady)
     {
+
+        updatePlayersReady.Wait();
+
         if (playerReady)
         {
-            Interlocked.Increment(ref playersReady);
+            playersReady++;
         }
         else
         {
-            Interlocked.Decrement(ref playersReady);
+            playersReady--;
         }
+
+        updatePlayersReady.Release();
 
         if (playersReady > 1 && playersReady >= (playerDataList.Count / 2) + 1)
         {
             Debug.Log("LISTOS PARA COMENZAR");
+            allPlayersReady = true;
+        }
+        else
+        {
+            allPlayersReady = false;
         }
 
         Debug.Log("Jugadores listos: " + playersReady);
@@ -95,16 +111,21 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         playerDataList[index] = newPlayerData;
     }
 
-    public void AddPlayer(int id, string name, bool isReady, bool isLeader, Color color)
+    public void AddPlayer(/*int id, string name, bool isReady, bool isLeader, Color color,*/ PlayerLobby player)
     {
         PlayerData p = new PlayerData
         {
-            id = id, 
-            name = name, 
-            isReady = isReady, 
-            isLeader = isLeader, 
-            color = color
+            id = player.id,
+            name = player.playerName,
+            isReady = player.isReady,
+            isLeader = player.isLeader,
+            color = player.playerColor
         };
+
+        if (p.isLeader)
+        {
+            playerLeader = player;
+        }
 
         playerDataList.Add(p);
         UpdatePlayerListUI(); 
@@ -118,7 +139,9 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
         if (playerDataList[index].isReady)
         {
-            Interlocked.Decrement(ref playersReady);
+            updatePlayersReady.Wait();
+            playersReady--;
+            updatePlayersReady.Release();
         }
 
         playerDataList.RemoveAt(index);
@@ -168,6 +191,11 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         UpdatePlayerListUI();
     }
 
+    public SyncListPlayerData GetPlayersData()
+    {
+        return playerDataList;
+    }
+
     private void PrintPlayerNames(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
     {
         string aux = "";
@@ -178,5 +206,10 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         }
 
         players.text = aux;
+    }
+
+    public void NotifyPlayersReady(bool oldValue, bool newValue)
+    {
+        playerLeader.UpdateGoButtonState(newValue);
     }
 }

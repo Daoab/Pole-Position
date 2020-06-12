@@ -9,6 +9,7 @@ TagManager:
   - ChatWindow
   - UsernameUI
   - InGameHUD
+  - debug
   layers:
   - Default
   - TransparentFX

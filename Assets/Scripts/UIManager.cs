@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     public bool showGUI = true;
 
     private NetworkManagerPolePosition m_NetworkManager;
+    private RaceNetworkBehaviour raceNetWorkBehaviour;
 
     #region UIReferences
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
@@ -28,6 +29,8 @@ public class UIManager : MonoBehaviour
 
     [Header("Race Settings")]
     [SerializeField] private Button readyButton;
+    [SerializeField] private Button goButton;
+    [SerializeField] private GameObject lapsUI;
 
     [Header("In-Game HUD")] 
     [SerializeField] private GameObject inGameHUD;
@@ -48,6 +51,7 @@ public class UIManager : MonoBehaviour
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
+        raceNetWorkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
     }
 
     private void Start()
@@ -86,6 +90,30 @@ public class UIManager : MonoBehaviour
         //inGameHUD.SetActive(true);
         //chatUI.SetActive(false);
         userNameUI.SetActive(true);
+    }
+
+    public void ActivateRaceSettings()
+    {
+        lapsUI.gameObject.SetActive(true);
+    }
+
+    public void ActivateGoButton()
+    {
+        goButton.gameObject.SetActive(true);
+
+        goButton.onClick.AddListener(() => raceNetWorkBehaviour.StartRace(FindObjectOfType<LobbyNetworkBehaviour>().GetPlayersData()));
+    }
+
+    public void DeactivateGoButton()
+    {
+        goButton.onClick.RemoveAllListeners();
+
+        goButton.gameObject.SetActive(false);
+    }
+
+    public void UpdateLapsCounter(int numLaps)
+    {
+        lapsUI.GetComponentInChildren<Text>().text = "Laps: " + numLaps.ToString();
     }
 
     private void StartHost()
