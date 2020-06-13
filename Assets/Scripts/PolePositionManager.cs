@@ -10,7 +10,7 @@ public class PolePositionManager : NetworkBehaviour
     public int numPlayers;
     public NetworkManagerPolePosition networkManager;
 
-    private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4);
+    private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4); //Error de concurrencia, es una lista normal
     private CircuitController m_CircuitController;
     private GameObject[] m_DebuggingSpheres;
 

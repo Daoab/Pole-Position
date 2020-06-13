@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
@@ -41,7 +42,7 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
     private void Start()
     {
-        playerDataList.Callback += PrintPlayerNames;
+        //playerDataList.Callback += PrintPlayerNames;
         playerDataList.Callback += UpdateUI;
     }
 
@@ -75,7 +76,8 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         updatePlayersReady.Release();
 
         //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
-        if (playersReady > 1 && playersReady >= (playerDataList.Count / 2) + 1)
+        //if (playersReady > 1 && playersReady >= (playerDataList.Count / 2) + 1)
+        if(true)
         {
             allPlayersReady = true;
         }
@@ -189,6 +191,11 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         return false;
     }
 
+    public PlayerData[] GetPlayerDatasSnapShot()
+    {
+        return playerDataList.ToArray<PlayerData>();
+    }
+
     //El jugador que ha entrado primero a la partida es el líder de la misma
     //Puede modificar las opciones de la carrera y empezar la partida
     public bool CheckLeader()
@@ -200,7 +207,7 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
     #region Hooks
 
-    private void PrintPlayerNames(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
+    /*private void PrintPlayerNames(SyncListPlayerData.Operation op, int index, PlayerData oldPlayerData, PlayerData newPlayerData)
     {
         string aux = "";
 
@@ -210,7 +217,7 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         }
 
         players.text = aux;
-    }
+    }*/
 
     //Cuando se actualiza allPlayersReady se comprueba si se puede empezar la partida, y por tanto si se puede mostrar el botón de go
     public void NotifyPlayersReady(bool oldValue, bool newValue)

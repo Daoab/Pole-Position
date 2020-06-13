@@ -9,6 +9,8 @@ public class UIManager : MonoBehaviour
 {
     public bool showGUI = true;
 
+    [SerializeField] Text DebugText;
+
     private NetworkManagerPolePosition m_NetworkManager;
     private RaceNetworkBehaviour raceNetWorkBehaviour;
 
@@ -66,20 +68,23 @@ public class UIManager : MonoBehaviour
     private void StartHost()
     {
         m_NetworkManager.StartHost();
-        ActivateUsernameUI();
+        //ActivateUsernameUI();
+        ActivateRaceUI();
     }
 
     private void StartClient()
     {
         m_NetworkManager.StartClient();
         m_NetworkManager.networkAddress = inputFieldIP.text;
-        ActivateUsernameUI();
+        //ActivateUsernameUI();
+        ActivateRaceUI();
     }
 
     private void StartServer()
     {
         m_NetworkManager.StartServer();
-        ActivateUsernameUI();
+        //ActivateUsernameUI();
+        ActivateRaceUI();
     }
     #endregion
 
@@ -124,6 +129,20 @@ public class UIManager : MonoBehaviour
         inGameHUD.SetActive(false);
         userNameUI.SetActive(false);
         chatUI.SetActive(false);
+    }
+
+    public void ActivateRaceUI()
+    {
+        mainMenu.SetActive(false);
+
+        chatUI.SetActive(false);
+        playerListUI.SetActive(false);
+        colorChangeButtons.SetActive(false);
+        lapsUI.SetActive(false);
+        readyButton.gameObject.SetActive(false);
+        goButton.gameObject.SetActive(false);
+
+        inGameHUD.SetActive(true);
     }
     #endregion
 
@@ -187,5 +206,11 @@ public class UIManager : MonoBehaviour
     {
         return playerListUI;
     }
+    
+    public Text GetDebugText()
+    {
+        return DebugText;
+    }
+
     #endregion
 }

@@ -6,11 +6,13 @@ using Mirror;
 public class NetworkManagerPolePosition : NetworkManager
 {
     LobbyNetworkBehaviour chatNetworkBehaviour;
+    UIManager uIManager;
 
     public override void Awake()
     {
         base.Awake();
         chatNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
+        uIManager = FindObjectOfType<UIManager>();
     }
 
     public override void OnClientDisconnect(NetworkConnection conn)
@@ -18,12 +20,21 @@ public class NetworkManagerPolePosition : NetworkManager
         base.OnClientDisconnect(conn);
     }
 
-    public void ReplacePlayer(NetworkConnection connection, GameObject newPlayer)
+    public void ReplacePlayer(NetworkConnection connection, GameObject newPlayerPrefab, int id, string name, Vector3 position, Quaternion rotation, Color carColor)
     {
         GameObject oldPlayer = connection.identity.gameObject;
-        NetworkServer.ReplacePlayerForConnection(connection, newPlayer);
-        NetworkServer.Destroy(oldPlayer);
 
-        //Spawnear coche en alguno de los puntos de spawn disponibles
+        GameObject newPlayer = GameObject.Instantiate(newPlayerPrefab, position, rotation);
+        PlayerInfo playerInfo = newPlayer.GetComponent<PlayerInfo>();
+
+        playerInfo.Name = name;
+        playerInfo.ID = id;
+        playerInfo.color = carColor;
+
+        newPlayer.GetComponent<SetupPlayer>().UpdatePlayerModelColor(carColor);
+
+        NetworkServer.ReplacePlayerForConnection(connection, newPlayer, true);
+
+        NetworkServer.Destroy(oldPlayer);
     }
 }

@@ -16,12 +16,16 @@ public class PlayerLobby : NetworkBehaviour
     SyncListFloat colorList = new SyncListFloat();
 
     LobbyNetworkBehaviour lobbyNetworkBehaviour;
+    NetworkManagerPolePosition networkManager;
 
     InputField inputField;
     Button nextButton;
     Button readyButton;
 
     UIManager uIManager;
+
+    [SerializeField] GameObject playerCarPrefab;
+    [SerializeField] Text DebugText;
 
     public static event Action<PlayerLobby, string> OnMessage;
 
@@ -41,20 +45,20 @@ public class PlayerLobby : NetworkBehaviour
 
     public void Start()
     {
+        uIManager = FindObjectOfType<UIManager>();
+        colorList.Callback += UpdatePlayerColor;
+        lobbyNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
+        networkManager = FindObjectOfType<NetworkManagerPolePosition>();
+        DebugText = uIManager.GetDebugText();
         if (isLocalPlayer)
         {
             GetUIReferences();
         }
-
-        colorList.Callback += UpdatePlayerColor;
-        lobbyNetworkBehaviour = FindObjectOfType<LobbyNetworkBehaviour>();
     }
 
     //Se asocian listeners a los elementos de la interfaz
     private void GetUIReferences()
     {
-        uIManager = FindObjectOfType<UIManager>();
-
         inputField = uIManager.GetUsernameUIInputField();
 
         nextButton = uIManager.GetUsernameNextButton();
@@ -89,11 +93,27 @@ public class PlayerLobby : NetworkBehaviour
 
     public void InstantiateCar()
     {
-        //Crear coche
+        //PlayerData playerData = lobbyNetworkBehaviour.GetPlayerDatasSnapshot()[lobbyNetworkBehaviour.FindPlayerDataIndex(id)];
 
-        //Modificar parámetros
+        networkManager.ReplacePlayer(
+            connectionToClient, 
+            playerCarPrefab, 
+            this.id, 
+            this.playerName, 
+            this.transform.position, 
+            this.transform.rotation, 
+            this.playerColor
+            );
 
-        //Llamar a networkmanager para que instancie coche
+        /*networkManager.ReplacePlayer(
+            connectionToClient,
+            playerCarPrefab,
+            playerData.id,
+            playerData.name,
+            this.transform.position,
+            this.transform.rotation,
+            playerData.color
+            );*/
     }
 
     #region Commands y RPCs
@@ -172,6 +192,19 @@ public class PlayerLobby : NetworkBehaviour
         }
     }
 
+    private void Update()
+    {
+        if(isLocalPlayer)
+        {
+            string aux = "";
+
+            foreach (float f in colorList)
+                aux += f.ToString() + " ";
+
+            DebugText.text = aux.ToString();
+        }
+    }
+
     //Se muestra al jugador host el botón de iniciar la partida cuando la mayoría de jugadores están listos
     public void UpdateGoButtonState(bool allPlayersReady)
     {
@@ -188,6 +221,4 @@ public class PlayerLobby : NetworkBehaviour
         }
     }
     #endregion
-
-    //IMPORTANTE: Instanciar el prefab del coche con el nombre y el color introducidos
 }

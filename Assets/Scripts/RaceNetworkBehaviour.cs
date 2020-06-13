@@ -32,12 +32,13 @@ public class RaceNetworkBehaviour : NetworkBehaviour
 
     public void StartRace()
     {
-        PlayerLobby[] playersLobby = FindObjectsOfType<PlayerLobby>();
+        uiManager.ActivateRaceUI();
 
+        PlayerLobby[] playersLobby = FindObjectsOfType<PlayerLobby>();
+        
         foreach(PlayerLobby p in playersLobby)
         {
             p.InstantiateCar();
         }
     }
-
 }

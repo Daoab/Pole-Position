@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3643638039636911111}
   - component: {fileID: 168507764694139171}
   m_Layer: 0
-  m_Name: PlayeChat
+  m_Name: PlayeLobby
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -65,4 +65,7 @@ MonoBehaviour:
   playerName: 
   id: 0
   isReady: 0
+  isLeader: 0
   playerColor: {r: 0.9607843, g: 0.28627452, b: 0.3647059, a: 1}
+  playerCarPrefab: {fileID: 1508097745644926054, guid: 8cb0f194315f5874797b12dac7f6cdfb,
+    type: 3}

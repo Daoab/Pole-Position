@@ -19,6 +19,8 @@ public class SetupPlayer : NetworkBehaviour
     private PlayerInfo m_PlayerInfo;
     private PolePositionManager m_PolePositionManager;
 
+    [SerializeField] MeshRenderer carBody;
+
     #region Start & Stop Callbacks
 
     /// <summary>
@@ -73,6 +75,12 @@ public class SetupPlayer : NetworkBehaviour
             m_PlayerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
             ConfigureCamera();
         }
+    }
+
+    public void UpdatePlayerModelColor(Color color)
+    {
+        Debug.Log(GetComponent<PlayerInfo>().color);
+        carBody.materials[1].color = color;
     }
 
     void OnSpeedChangeEventHandler(float speed)
