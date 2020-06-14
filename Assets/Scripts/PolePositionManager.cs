@@ -20,6 +20,8 @@ public class PolePositionManager : NetworkBehaviour
     [Tooltip("Ángulo máximo del coche respecto a la dirección de la pista hasta que se detecta que va hacia atrás")]
     [SerializeField][Range(0f, 180f)] float goingBackwardsThreshold = 110f;
 
+    private float circuitLength = 0f;
+
     private void Awake()
     {
         if (networkManager == null) networkManager = FindObjectOfType<NetworkManagerPolePosition>();
@@ -31,6 +33,8 @@ public class PolePositionManager : NetworkBehaviour
             m_DebuggingSpheres[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             m_DebuggingSpheres[i].GetComponent<SphereCollider>().enabled = false;
         }
+
+        circuitLength = m_CircuitController.CircuitLength;
     }
 
     private void Update()
@@ -48,35 +52,15 @@ public class PolePositionManager : NetworkBehaviour
         addPlayerSemaphore.Release();
     }
 
-    private class PlayerInfoComparer : Comparer<PlayerInfo>
-    {
-        float[] m_ArcLengths;
-
-        public PlayerInfoComparer(float[] arcLengths)
-        {
-            m_ArcLengths = arcLengths;
-        }
-
-        public override int Compare(PlayerInfo x, PlayerInfo y)
-        {
-            if (this.m_ArcLengths[x.ID] < m_ArcLengths[y.ID])
-                return 1;
-            else return -1;
-        }
-    }
-
     public void UpdateRaceProgress()
     {
-        // Update car arc-lengths
-        float[] arcLengths = new float[m_Players.Count];
-
         for (int i = 0; i < m_Players.Count; ++i)
         {
-            arcLengths[i] = ComputeCarArcLength(i);
-
+            this.m_Players[i].distanceTravelled = ComputeCarArcLength(i);
+            //Debug.Log(this.m_Players[i].Name + " Distancia: " + this.m_Players[i].distanceTravelled);
         }
 
-        m_Players.Sort(new PlayerInfoComparer(arcLengths));
+        m_Players.Sort((x, y) => y.distanceTravelled.CompareTo(x.distanceTravelled));
 
         string myRaceOrder = "";
         foreach (var _player in m_Players)
@@ -114,15 +98,16 @@ public class PolePositionManager : NetworkBehaviour
 
         this.m_DebuggingSpheres[ID].transform.position = carProj;
 
-        if (this.m_Players[ID].CurrentLap == 0)
+        minArcL += m_CircuitController.CircuitLength * (m_Players[ID].CurrentLap /*- 1*/);
+
+        /*if (this.m_Players[ID].CurrentLap == 0)
         {
             minArcL -= m_CircuitController.CircuitLength;
         }
         else
         {
-            minArcL += m_CircuitController.CircuitLength *
-                       (m_Players[ID].CurrentLap - 1);
-        }
+            
+        }*/
 
         return minArcL;
     }

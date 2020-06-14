@@ -7,24 +7,28 @@ public class Checkpoint : MonoBehaviour
     [SerializeField] bool isGoal = false;
     [SerializeField] Checkpoint nextCheckpoint;
 
+    public float distanceToNextCheckpoint;
+
     RaceNetworkBehaviour raceNetworkBehaviour;
 
     private void Start()
     {
         raceNetworkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
+        distanceToNextCheckpoint = Mathf.Abs(Vector3.Distance(gameObject.transform.position, nextCheckpoint.gameObject.transform.position));
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if(other.tag == "Player" && other.GetComponent<SetupPlayer>().isLocalPlayer)
         {
+            PlayerInfo playerInfo = other.GetComponent<PlayerInfo>();
+
             if (isGoal)
             {
-                PlayerInfo playerInfo = other.GetComponent<PlayerInfo>();
-                playerInfo.CurrentLap++;
+                playerInfo.CmdAddLap();
                 raceNetworkBehaviour.CheckRaceEnd(playerInfo);
             }
-                
+
             nextCheckpoint.gameObject.SetActive(true);
             gameObject.SetActive(false);
         }

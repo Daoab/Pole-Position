@@ -15,6 +15,8 @@ public class PlayerInfo : NetworkBehaviour
 
     [SyncVar] public Color color;
 
+    [SyncVar] public float distanceTravelled = 0f;
+
     [SyncVar] public bool goingBackwards = false;
 
     [SyncVar] public bool raceEnded = false;
@@ -28,5 +30,11 @@ public class PlayerInfo : NetworkBehaviour
     public override string ToString()
     {
         return Name;
+    }
+
+    [Command]
+    public void CmdAddLap()
+    {
+        this.CurrentLap++;
     }
 }

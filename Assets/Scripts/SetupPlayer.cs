@@ -1,6 +1,7 @@
 ﻿using System;
 using Mirror;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = System.Random;
 
 /*
@@ -12,6 +13,8 @@ public class SetupPlayer : NetworkBehaviour
 {
     [SyncVar] private int m_ID;
     [SyncVar] private string m_Name;
+
+    [SerializeField] Text debug;
 
     private UIManager m_UIManager;
     private NetworkManagerPolePosition m_NetworkManager;
@@ -64,6 +67,7 @@ public class SetupPlayer : NetworkBehaviour
         m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
         m_PolePositionManager = FindObjectOfType<PolePositionManager>();
         m_UIManager = FindObjectOfType<UIManager>();
+        debug = m_UIManager.GetDebugText();
     }
 
     // Start is called before the first frame update
