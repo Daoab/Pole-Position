@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Mirror;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class PolePositionManager : NetworkBehaviour
     public NetworkManagerPolePosition networkManager;
 
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4); //Error de concurrencia, es una lista normal
+    SemaphoreSlim addPlayerSemaphore = new SemaphoreSlim(1, 1);
+
     private CircuitController m_CircuitController;
     private GameObject[] m_DebuggingSpheres;
 
@@ -40,7 +43,9 @@ public class PolePositionManager : NetworkBehaviour
 
     public void AddPlayer(PlayerInfo player)
     {
+        addPlayerSemaphore.Wait();
         m_Players.Add(player);
+        addPlayerSemaphore.Release();
     }
 
     private class PlayerInfoComparer : Comparer<PlayerInfo>
@@ -104,6 +109,8 @@ public class PolePositionManager : NetworkBehaviour
         //Comprobación de si va hacia atrás (según el ángulo entre el forward del coche y la dirección del circuito)
         float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
         this.m_Players[ID].goingBackwards = ang > goingBackwardsThreshold;
+
+        if (this.m_Players[ID].goingBackwards) Debug.Log(m_Players[ID].name + " sentido contrario: " + m_Players[ID].goingBackwards);
 
         this.m_DebuggingSpheres[ID].transform.position = carProj;
 

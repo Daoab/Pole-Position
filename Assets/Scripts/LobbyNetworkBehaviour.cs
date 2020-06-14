@@ -21,6 +21,7 @@ public struct PlayerData
 [System.Serializable]
 public class SyncListPlayerData : SyncList<PlayerData> {}
 
+//Posibles problemas de concurrencia al escribir en la lista, depende que cómo lo tenga hecho Mirror
 public class LobbyNetworkBehaviour : NetworkBehaviour
 {
     private SyncListPlayerData playerDataList = new SyncListPlayerData();
@@ -76,8 +77,8 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
         updatePlayersReady.Release();
 
         //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
-        //if (playersReady > 1 && playersReady >= (playerDataList.Count / 2) + 1)
-        if(true)
+        if (playersReady > 1 && playersReady >= (playerDataList.Count / 2) + 1)
+        //if(true)
         {
             allPlayersReady = true;
         }

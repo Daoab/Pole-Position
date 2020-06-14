@@ -15,7 +15,9 @@ public class PlayerInfo : NetworkBehaviour
 
     [SyncVar] public Color color;
 
-    [SyncVar] public bool goingBackwards;
+    [SyncVar] public bool goingBackwards = false;
+
+    [SyncVar] public bool raceEnded = false;
 
     //Posición a la que se recuperará el jugador si choca
     [SyncVar] public Vector3 lastSafePosition;
