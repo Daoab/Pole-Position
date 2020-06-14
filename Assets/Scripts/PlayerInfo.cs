@@ -3,17 +3,25 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public class PlayerInfo : MonoBehaviour
+public class PlayerInfo : NetworkBehaviour
 {
-    public string Name { get; set; }
+    [SyncVar] public string Name;
 
-    public int ID { get; set; }
+    [SyncVar] public int ID;
 
-    public int CurrentPosition { get; set; }
+    [SyncVar] public int CurrentPosition;
 
-    public int CurrentLap { get; set; }
+    [SyncVar] public int CurrentLap;
 
-    public Color color { get; set; }
+    [SyncVar] public Color color;
+
+    [SyncVar] public bool goingBackwards;
+
+    //Posición a la que se recuperará el jugador si choca
+    [SyncVar] public Vector3 lastSafePosition;
+
+    //Dirección a la que mirará el jugador si choca
+    [SyncVar] public Vector3 crashRecoverForward;
 
     public override string ToString()
     {

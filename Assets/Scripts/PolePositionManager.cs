@@ -14,6 +14,9 @@ public class PolePositionManager : NetworkBehaviour
     private CircuitController m_CircuitController;
     private GameObject[] m_DebuggingSpheres;
 
+    [Tooltip("Ángulo máximo del coche respecto a la dirección de la pista hasta que se detecta que va hacia atrás")]
+    [SerializeField][Range(0f, 180f)] float goingBackwardsThreshold = 110f;
+
     private void Awake()
     {
         if (networkManager == null) networkManager = FindObjectOfType<NetworkManagerPolePosition>();
@@ -94,16 +97,13 @@ public class PolePositionManager : NetworkBehaviour
         float minArcL =
             this.m_CircuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
-        //Vector3 segTan = Vector3.Normalize(carProj - carPos);
+        //Se actualizan los datos de recuperación de choques del jugador
+        this.m_Players[ID].lastSafePosition = carProj;
+        this.m_Players[ID].crashRecoverForward = m_CircuitController.GetSegment(segIdx);
 
+        //Comprobación de si va hacia atrás (según el ángulo entre el forward del coche y la dirección del circuito)
         float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
-
-        //Debug.Log(ang);
-
-        if (ang > 100)
-        {
-            Debug.Log("SENTIDO INCORRECTO");
-        }
+        this.m_Players[ID].goingBackwards = ang > goingBackwardsThreshold;
 
         this.m_DebuggingSpheres[ID].transform.position = carProj;
 

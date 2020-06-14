@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using Mirror;
 
@@ -32,6 +33,10 @@ public class PlayerController : NetworkBehaviour
     private Rigidbody m_Rigidbody;
     private float m_SteerHelper = 0.8f;
 
+    private bool recoveringFromCrash = false;
+    [SerializeField] float timeToRecoverFromCrash = 1.0f;
+    [Tooltip("Ángulo mínimo que ha de girar el coche antes de determinar que se ha dado la vuelta")]
+    [SerializeField][Range(0f, 90f)] float minAngleBeforeCrashed = 45f;
 
     private float m_CurrentSpeed = 0;
 
@@ -67,6 +72,11 @@ public class PlayerController : NetworkBehaviour
         InputSteering = Input.GetAxis(("Horizontal"));
         InputBrake = Input.GetAxis("Jump");
         Speed = m_Rigidbody.velocity.magnitude;
+
+        if(!recoveringFromCrash && CheckCrashed())
+        {
+            StartCoroutine(RecoverFromCrash());
+        }
     }
 
     public void FixedUpdate()
@@ -214,6 +224,25 @@ public class PlayerController : NetworkBehaviour
         }
 
         CurrentRotation = transform.eulerAngles.y;
+    }
+
+    //Comprueba si el coche se ha dado la vuelta
+    private bool CheckCrashed()
+    {
+        return Vector3.Angle(transform.up, Vector3.up) > minAngleBeforeCrashed;
+    }
+
+    //Corrutina que da la vuelta al coche y lo coloca en una posición segura después de un tiempo determinado
+    private IEnumerator RecoverFromCrash()
+    {
+        recoveringFromCrash = true;
+
+        yield return new WaitForSecondsRealtime(timeToRecoverFromCrash);
+
+        transform.position = m_PlayerInfo.lastSafePosition;
+        transform.forward = m_PlayerInfo.crashRecoverForward;
+
+        recoveringFromCrash = false;
     }
 
     #endregion
