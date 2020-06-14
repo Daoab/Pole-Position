@@ -65,6 +65,7 @@ public class PolePositionManager : NetworkBehaviour
         for (int i = 0; i < m_Players.Count; ++i)
         {
             arcLengths[i] = ComputeCarArcLength(i);
+
         }
 
         m_Players.Sort(new PlayerInfoComparer(arcLengths));
@@ -84,6 +85,7 @@ public class PolePositionManager : NetworkBehaviour
         // path segment and accumulate the arc-length along of the car along
         // the circuit.
         Vector3 carPos = this.m_Players[ID].transform.position;
+        Vector3 carFwd = this.m_Players[ID].transform.forward;
 
         int segIdx;
         float carDist;
@@ -91,6 +93,17 @@ public class PolePositionManager : NetworkBehaviour
 
         float minArcL =
             this.m_CircuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
+
+        //Vector3 segTan = Vector3.Normalize(carProj - carPos);
+
+        float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
+
+        //Debug.Log(ang);
+
+        if (ang > 100)
+        {
+            Debug.Log("SENTIDO INCORRECTO");
+        }
 
         this.m_DebuggingSpheres[ID].transform.position = carProj;
 

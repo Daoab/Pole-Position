@@ -9,6 +9,9 @@ public class CircuitController : MonoBehaviour
     private float[] m_CumArcLength;
     private float m_TotalLength;
 
+    [SerializeField] private GameObject m_checkpoints;
+    private Collider[] m_checkpoints_array;
+
     public float CircuitLength
     {
         get { return m_TotalLength; }
@@ -22,6 +25,7 @@ public class CircuitController : MonoBehaviour
         m_PathPos = new Vector3[numPoints];
         m_CumArcLength = new float[numPoints];
         m_CircuitPath.GetPositions(m_PathPos);
+        m_checkpoints_array = m_checkpoints.GetComponentsInChildren<Collider>();
 
         // Compute circuit arc-length
         m_CumArcLength[0] = 0;
