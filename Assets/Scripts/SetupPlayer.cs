@@ -78,6 +78,7 @@ public class SetupPlayer : NetworkBehaviour
             m_PlayerController.enabled = true;
             m_PlayerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
             ConfigureCamera();
+            //Activar updateracetrigger
         }
     }
 

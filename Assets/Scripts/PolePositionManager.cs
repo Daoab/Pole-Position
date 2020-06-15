@@ -13,6 +13,7 @@ public class PolePositionManager : NetworkBehaviour
 
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4); //Error de concurrencia, es una lista normal
     SemaphoreSlim addPlayerSemaphore = new SemaphoreSlim(1, 1);
+    [SyncVar] public string raceOrder = "";
 
     private CircuitController m_CircuitController;
     private GameObject[] m_DebuggingSpheres;
@@ -37,14 +38,6 @@ public class PolePositionManager : NetworkBehaviour
         circuitLength = m_CircuitController.CircuitLength;
     }
 
-    private void Update()
-    {
-        if (m_Players.Count == 0)
-            return;
-
-        UpdateRaceProgress();
-    }
-
     public void AddPlayer(PlayerInfo player)
     {
         addPlayerSemaphore.Wait();
@@ -54,21 +47,25 @@ public class PolePositionManager : NetworkBehaviour
 
     public void UpdateRaceProgress()
     {
+        if (m_Players.Count == 0 && isLocalPlayer)
+            return;
+
         for (int i = 0; i < m_Players.Count; ++i)
         {
             this.m_Players[i].distanceTravelled = ComputeCarArcLength(i);
-            //Debug.Log(this.m_Players[i].Name + " Distancia: " + this.m_Players[i].distanceTravelled);
         }
 
         m_Players.Sort((x, y) => y.distanceTravelled.CompareTo(x.distanceTravelled));
 
-        string myRaceOrder = "";
+        string aux = "";
         foreach (var _player in m_Players)
         {
-            myRaceOrder += _player.Name + " ";
+            aux += _player.Name + " ";
         }
 
-        Debug.Log("El orden de carrera es: " + myRaceOrder);
+        raceOrder = aux;
+
+        Debug.Log("El orden de carrera es: " + raceOrder);
     }
 
     float ComputeCarArcLength(int ID)
@@ -98,16 +95,7 @@ public class PolePositionManager : NetworkBehaviour
 
         this.m_DebuggingSpheres[ID].transform.position = carProj;
 
-        minArcL += m_CircuitController.CircuitLength * (m_Players[ID].CurrentLap /*- 1*/);
-
-        /*if (this.m_Players[ID].CurrentLap == 0)
-        {
-            minArcL -= m_CircuitController.CircuitLength;
-        }
-        else
-        {
-            
-        }*/
+        minArcL += m_CircuitController.CircuitLength * m_Players[ID].CurrentLap;
 
         return minArcL;
     }

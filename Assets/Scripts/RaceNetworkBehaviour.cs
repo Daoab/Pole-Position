@@ -32,6 +32,11 @@ public class RaceNetworkBehaviour : NetworkBehaviour
         uiManager.UpdateLapsCounter(numLaps);
     }
 
+    public int GetMaxLaps()
+    {
+        return maxLaps;
+    }
+
     public void StartRace()
     {
         uiManager.ActivateRaceUI();
@@ -42,11 +47,6 @@ public class RaceNetworkBehaviour : NetworkBehaviour
         {
             p.InstantiateCar();
         }
-    }
-
-    public int GetMaxLaps()
-    {
-        return maxLaps;
     }
 
     public void CheckRaceEnd(PlayerInfo player)
