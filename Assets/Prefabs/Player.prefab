@@ -255,6 +255,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  totalTime: 0
 --- !u!114 &6346869062069434778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -414,7 +415,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 18.8, y: 2.8, z: 3.37}
+  m_Size: {x: 36, y: 2.8, z: 3.37}
   m_Center: {x: 0, y: 0.68, z: 0}
 --- !u!114 &3539442605002455314
 MonoBehaviour:

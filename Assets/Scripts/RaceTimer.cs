@@ -11,7 +11,7 @@ public class RaceTimer : NetworkBehaviour
     bool timerRunning = true;
     int index = 0;
 
-    [SyncVar] float totalTime = 0f;
+    [SyncVar] public float totalTime = 0f;
     float[] lapTimes;
 
     private void Start()
@@ -23,7 +23,7 @@ public class RaceTimer : NetworkBehaviour
 
     void Update()
     {
-        if(timerRunning)
+        if(timerRunning && isLocalPlayer)
         {
             //Truncar a dos decimales
             float deltaTime = Mathf.Round(Time.deltaTime * 100f) * 0.01f;

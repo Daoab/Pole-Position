@@ -12,6 +12,9 @@ public class UpdateRaceOrderTrigger : MonoBehaviour
         polePositionManager = FindObjectOfType<PolePositionManager>();
     }
 
+    //Cada coche tiene un trigger para detectar cuándo sucede un adelantamiento, 
+    //y en ese momento se actualiza el orden de la carrera.
+    //Esto se hace para que no se esté comprobando continuamente en qué posición están los corredores
     private void OnTriggerStay(Collider other)
     {
         if (other.gameObject.tag == "Player")

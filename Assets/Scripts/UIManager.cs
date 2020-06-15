@@ -40,6 +40,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text textLaps;
     [SerializeField] private Text textPosition;
     [SerializeField] private Text textTime;
+    [SerializeField] private Image turnBack;
     [Space]
 
     [SerializeField] GameObject playerListUI;
@@ -183,6 +184,11 @@ public class UIManager : MonoBehaviour
     public void UpdateTime(float currentTime, float totalTime)
     {
         textTime.text = "Total time: \n" + totalTime.ToString("0.00") + "\nCurrent time: \n" + currentTime.ToString("0.00");
+    }
+
+    public void UpdateTurnBack(bool goingBackwards)
+    {
+        turnBack.gameObject.SetActive(goingBackwards);
     }
     #endregion
 

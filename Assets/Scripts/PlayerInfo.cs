@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
+[System.Serializable]
 public class PlayerInfo : NetworkBehaviour
 {
     [SyncVar] public string Name;
@@ -27,21 +28,34 @@ public class PlayerInfo : NetworkBehaviour
     //Dirección a la que mirará el jugador si choca
     [SyncVar] public Vector3 crashRecoverForward;
 
+    UIManager uIManager;
+
+    private void Start()
+    {
+        uIManager = FindObjectOfType<UIManager>();
+    }
+
     public override string ToString()
     {
         return Name;
     }
 
+    #region Commands
     [Command]
     public void CmdAddLap()
     {
         this.CurrentLap++;
+        uIManager.UpdateLapProgress(this);
     }
 
     [Command]
     public void CmdUpdateGoingBackwards(bool goingBackwards)
     {
         this.goingBackwards = goingBackwards;
+        if (isLocalPlayer)
+        {
+            uIManager.UpdateTurnBack(this.goingBackwards);
+        }
     }
 
     [Command]
@@ -62,4 +76,5 @@ public class PlayerInfo : NetworkBehaviour
     {
         this.CurrentPosition = currentPosition;
     }
+    #endregion
 }

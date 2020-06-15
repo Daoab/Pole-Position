@@ -49,6 +49,7 @@ public class SetupPlayer : NetworkBehaviour
         m_PlayerInfo.Name = "Player" + m_ID;
         m_PlayerInfo.CurrentLap = 0;
         m_PolePositionManager.AddPlayer(m_PlayerInfo);
+        m_PolePositionManager.UpdateRaceProgress();
     }
 
     /// <summary>
@@ -57,6 +58,12 @@ public class SetupPlayer : NetworkBehaviour
     /// </summary>
     public override void OnStartLocalPlayer()
     {
+    }
+
+    public override void OnStopClient()
+    {
+        m_PolePositionManager.RemovePlayer(m_PlayerInfo);
+        base.OnStopClient();
     }
 
     #endregion

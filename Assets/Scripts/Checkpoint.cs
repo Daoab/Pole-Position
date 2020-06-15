@@ -19,6 +19,9 @@ public class Checkpoint : MonoBehaviour
         uIManager = FindObjectOfType<UIManager>();
     }
 
+    //Se ha implementado un sistema de checkpoints para asegurar que las vueltas al circuito se realizan correctamente
+    //Cuando un jugador local toca un checkpoint, se activa el siguiente, hasta llegar a la meta.
+    //Cuando el jugador ha pasado por todos los checkpoints y toca la meta se contabiliza una vuelta
     private void OnTriggerEnter(Collider other)
     {
         if(other.tag == "Player" && other.GetComponent<SetupPlayer>().isLocalPlayer)
@@ -28,7 +31,6 @@ public class Checkpoint : MonoBehaviour
             if (isGoal)
             {
                 playerInfo.CmdAddLap();
-                uIManager.UpdateLapProgress(playerInfo);
                 raceNetworkBehaviour.CheckRaceEnd(playerInfo);
             }
 

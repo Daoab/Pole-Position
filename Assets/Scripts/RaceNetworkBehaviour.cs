@@ -49,6 +49,8 @@ public class RaceNetworkBehaviour : NetworkBehaviour
         }
     }
 
+    //Cuando un jugador termina la carrera, se indica que la ha terminado, y se le permite seguir jugando.
+    //Sin embargo, no puede chocarse con otros jugadores y se para su contador de tiempo.
     public void CheckRaceEnd(PlayerInfo player)
     {
         /*

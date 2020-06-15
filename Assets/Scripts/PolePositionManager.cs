@@ -12,8 +12,8 @@ public class PolePositionManager : NetworkBehaviour
     public NetworkManagerPolePosition networkManager;
     private UIManager uiManager;
 
-    private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4); //Error de concurrencia, es una lista normal
-    SemaphoreSlim addPlayerSemaphore = new SemaphoreSlim(1, 1);
+    private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4);
+    SemaphoreSlim modifyPlayerSemaphore = new SemaphoreSlim(1, 1);
 
     private CircuitController m_CircuitController;
 
@@ -34,18 +34,20 @@ public class PolePositionManager : NetworkBehaviour
 
     public void AddPlayer(PlayerInfo player)
     {
-        addPlayerSemaphore.Wait();
+        modifyPlayerSemaphore.Wait();
         m_Players.Add(player);
-        addPlayerSemaphore.Release();
+        modifyPlayerSemaphore.Release();
     }
 
-    /*
-    private void Update()
+    public void RemovePlayer(PlayerInfo player)
     {
-        UpdateRaceProgress();
+        modifyPlayerSemaphore.Wait();
+        m_Players.Remove(player);
+        modifyPlayerSemaphore.Release();
     }
-    */
-
+    
+    //Calcula la distancia que han recorrido los jugadores en total en el circuito, y los ordena según esa distancia,
+    //de modo que se pueda obtener su posición en la carrera
     public void UpdateRaceProgress()
     {
         if (m_Players.Count == 0 && isLocalPlayer)
@@ -72,6 +74,9 @@ public class PolePositionManager : NetworkBehaviour
         Debug.Log("El orden de carrera es: " + raceOrder);
     }
 
+    //Calcula cuánta distancia han recorrido los jugadores en el circuito tomando como referencia los puntos de los segmentos.
+    //Dependiendo del número de vueltas que hayan dado los jugadores, se suma la longitud completa del circuito a la que
+    //lleven recorrida en la vuelta actual para hallar la distancia total recorrida.
     float ComputeCarArcLength(int ID)
     {
         // Compute the projection of the car position to the closest circuit 
@@ -92,6 +97,7 @@ public class PolePositionManager : NetworkBehaviour
         return minArcL;
     }
 
+    //Comprueba si el coche está yendo marcha atrás, y establece el punto al que se ha de colocar al jugador en caso de que vuelque.
     public void UpdateRaceCarState(PlayerInfo player)
     {
         Vector3 carPos = player.transform.position;

@@ -7,6 +7,7 @@ public class NetworkManagerPolePosition : NetworkManager
 {
     LobbyNetworkBehaviour chatNetworkBehaviour;
     UIManager uIManager;
+    PolePositionManager polePositionManager;
 
     public override void Awake()
     {
@@ -17,6 +18,7 @@ public class NetworkManagerPolePosition : NetworkManager
 
     public override void OnClientDisconnect(NetworkConnection conn)
     {
+        NetworkServer.Destroy(conn.identity.gameObject);
         base.OnClientDisconnect(conn);
     }
 

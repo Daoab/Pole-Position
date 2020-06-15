@@ -94,7 +94,10 @@ public class PlayerLobby : NetworkBehaviour
     public void InstantiateCar()
     {
         //PlayerData playerData = lobbyNetworkBehaviour.GetPlayerDatasSnapshot()[lobbyNetworkBehaviour.FindPlayerDataIndex(id)];
-
+        if (isLocalPlayer)
+        {
+            uIManager.ActivateRaceUI();
+        }
         networkManager.ReplacePlayer(
             connectionToClient, 
             playerCarPrefab, 
