@@ -10,11 +10,13 @@ public class Checkpoint : MonoBehaviour
     public float distanceToNextCheckpoint;
 
     RaceNetworkBehaviour raceNetworkBehaviour;
+    UIManager uIManager;
 
     private void Start()
     {
         raceNetworkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
         distanceToNextCheckpoint = Mathf.Abs(Vector3.Distance(gameObject.transform.position, nextCheckpoint.gameObject.transform.position));
+        uIManager = FindObjectOfType<UIManager>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -26,6 +28,7 @@ public class Checkpoint : MonoBehaviour
             if (isGoal)
             {
                 playerInfo.CmdAddLap();
+                uIManager.UpdateLapProgress(playerInfo);
                 raceNetworkBehaviour.CheckRaceEnd(playerInfo);
             }
 

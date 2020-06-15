@@ -6,6 +6,7 @@ using Mirror;
 public class RaceTimer : NetworkBehaviour
 {
     PlayerInfo playerInfo;
+    UIManager uIManager;
 
     bool timerRunning = true;
     int index = 0;
@@ -17,6 +18,7 @@ public class RaceTimer : NetworkBehaviour
     {
         playerInfo = GetComponent<PlayerInfo>();
         lapTimes = new float[FindObjectOfType<RaceNetworkBehaviour>().GetMaxLaps()];
+        uIManager = FindObjectOfType<UIManager>();
     }
 
     void Update()
@@ -27,7 +29,8 @@ public class RaceTimer : NetworkBehaviour
             float deltaTime = Mathf.Round(Time.deltaTime * 100f) * 0.01f;
 
             lapTimes[playerInfo.CurrentLap] += deltaTime;
-            totalTime += deltaTime;
+            CmdAddTotalTime(deltaTime);
+            uIManager.UpdateTime(lapTimes[playerInfo.CurrentLap], totalTime);
         }
     }
 
@@ -41,15 +44,14 @@ public class RaceTimer : NetworkBehaviour
         return totalTime;
     }
 
-    public SyncListFloat GetLapTimes()
+    public float[] GetLapTimes()
     {
-        SyncListFloat lapTimesList = new SyncListFloat();
+        return lapTimes;
+    }
 
-        foreach(float f in lapTimes)
-        {
-            lapTimesList.Add(f);
-        }
-        
-        return lapTimesList;
+    [Command]
+    public void CmdAddTotalTime(float time)
+    {
+        totalTime += time;
     }
 }

@@ -51,10 +51,11 @@ public class RaceNetworkBehaviour : NetworkBehaviour
 
     public void CheckRaceEnd(PlayerInfo player)
     {
+        /*
         if(player.CurrentLap >= numLaps)
         {
             Debug.Log("Race end");
-            player.raceEnded = true;
+            player.CmdRaceEnded(true);
             player.GetComponent<RaceTimer>().StopTimer();
 
             player.gameObject.layer = raceEndedLayer;
@@ -64,6 +65,7 @@ public class RaceNetworkBehaviour : NetworkBehaviour
             
             //Cuando la mayoría de jugadores han acabado la carrera se activa la interfaz de victoria
             //Activar UI de victoria
-        }
+            //Mantener posición de los jugadores que han acabado
+        }*/
     }
 }

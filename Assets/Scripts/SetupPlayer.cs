@@ -15,6 +15,7 @@ public class SetupPlayer : NetworkBehaviour
     [SyncVar] private string m_Name;
 
     [SerializeField] Text debug;
+    [SerializeField] GameObject updateRaceOrderTrigger;
 
     private UIManager m_UIManager;
     private NetworkManagerPolePosition m_NetworkManager;
@@ -78,7 +79,17 @@ public class SetupPlayer : NetworkBehaviour
             m_PlayerController.enabled = true;
             m_PlayerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
             ConfigureCamera();
-            //Activar updateracetrigger
+            updateRaceOrderTrigger.SetActive(true);
+            m_PolePositionManager.UpdateRaceProgress();
+            m_UIManager.UpdateLapProgress(m_PlayerInfo);
+        }
+    }
+
+    private void Update()
+    {
+        if (isLocalPlayer)
+        {
+            m_PolePositionManager.UpdateRaceCarState(m_PlayerInfo);
         }
     }
 

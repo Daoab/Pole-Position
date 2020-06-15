@@ -14,6 +14,9 @@ public class UpdateRaceOrderTrigger : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        
+        if (other.gameObject.tag == "Player")
+        {
+            polePositionManager.UpdateRaceProgress();
+        }
     }
 }

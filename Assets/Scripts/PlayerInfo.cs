@@ -37,4 +37,29 @@ public class PlayerInfo : NetworkBehaviour
     {
         this.CurrentLap++;
     }
+
+    [Command]
+    public void CmdUpdateGoingBackwards(bool goingBackwards)
+    {
+        this.goingBackwards = goingBackwards;
+    }
+
+    [Command]
+    public void CmdUpdateCrashInfo(Vector3 lastSafePosition, Vector3 crashRecoverForward)
+    {
+        this.lastSafePosition = lastSafePosition;
+        this.crashRecoverForward = crashRecoverForward;
+    }
+
+    [Command]
+    public void CmdRaceEnded(bool raceEnded)
+    {
+        this.raceEnded = raceEnded;
+    }
+
+    [Command]
+    public void CmdUpdateRacePosition(int currentPosition)
+    {
+        this.CurrentPosition = currentPosition;
+    }
 }

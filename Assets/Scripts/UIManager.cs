@@ -39,6 +39,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text textSpeed;
     [SerializeField] private Text textLaps;
     [SerializeField] private Text textPosition;
+    [SerializeField] private Text textTime;
     [Space]
 
     [SerializeField] GameObject playerListUI;
@@ -161,6 +162,27 @@ public class UIManager : MonoBehaviour
     {
         Material carMaterial = carBody.GetComponent<MeshRenderer>().materials[1];
         carMaterial.color = color;
+    }
+
+    public void UpdateRaceProgress(List<PlayerInfo> players)
+    {
+        textPosition.text = "";
+
+        foreach(PlayerInfo p in players)
+        {
+            Debug.Log(p.Name + " " + p.CurrentPosition);
+            textPosition.text += p.CurrentPosition + " — " + p.Name + "\n";
+        }
+    }
+
+    public void UpdateLapProgress(PlayerInfo player)
+    {
+        textLaps.text = "LAP: " + player.CurrentLap + "/" + raceNetWorkBehaviour.numLaps;
+    }
+
+    public void UpdateTime(float currentTime, float totalTime)
+    {
+        textTime.text = "Total time: \n" + totalTime.ToString("0.00") + "\nCurrent time: \n" + currentTime.ToString("0.00");
     }
     #endregion
 

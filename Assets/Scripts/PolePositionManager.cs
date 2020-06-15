@@ -10,13 +10,12 @@ public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
     public NetworkManagerPolePosition networkManager;
+    private UIManager uiManager;
 
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4); //Error de concurrencia, es una lista normal
     SemaphoreSlim addPlayerSemaphore = new SemaphoreSlim(1, 1);
-    [SyncVar] public string raceOrder = "";
 
     private CircuitController m_CircuitController;
-    private GameObject[] m_DebuggingSpheres;
 
     [Tooltip("Ángulo máximo del coche respecto a la dirección de la pista hasta que se detecta que va hacia atrás")]
     [SerializeField][Range(0f, 180f)] float goingBackwardsThreshold = 110f;
@@ -28,14 +27,9 @@ public class PolePositionManager : NetworkBehaviour
         if (networkManager == null) networkManager = FindObjectOfType<NetworkManagerPolePosition>();
         if (m_CircuitController == null) m_CircuitController = FindObjectOfType<CircuitController>();
 
-        m_DebuggingSpheres = new GameObject[networkManager.maxConnections];
-        for (int i = 0; i < networkManager.maxConnections; ++i)
-        {
-            m_DebuggingSpheres[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            m_DebuggingSpheres[i].GetComponent<SphereCollider>().enabled = false;
-        }
-
         circuitLength = m_CircuitController.CircuitLength;
+
+        uiManager = FindObjectOfType<UIManager>();
     }
 
     public void AddPlayer(PlayerInfo player)
@@ -45,6 +39,13 @@ public class PolePositionManager : NetworkBehaviour
         addPlayerSemaphore.Release();
     }
 
+    /*
+    private void Update()
+    {
+        UpdateRaceProgress();
+    }
+    */
+
     public void UpdateRaceProgress()
     {
         if (m_Players.Count == 0 && isLocalPlayer)
@@ -53,17 +54,20 @@ public class PolePositionManager : NetworkBehaviour
         for (int i = 0; i < m_Players.Count; ++i)
         {
             this.m_Players[i].distanceTravelled = ComputeCarArcLength(i);
+            Debug.Log(this.m_Players[i].Name + " " + this.m_Players[i].distanceTravelled);
         }
 
         m_Players.Sort((x, y) => y.distanceTravelled.CompareTo(x.distanceTravelled));
 
-        string aux = "";
-        foreach (var _player in m_Players)
+        string raceOrder = "";
+
+        for(int i = 0; i < m_Players.Count; i++)
         {
-            aux += _player.Name + " ";
+            raceOrder += this.m_Players[i].Name + " ";
+            this.m_Players[i].CurrentPosition = i + 1;
         }
 
-        raceOrder = aux;
+        uiManager.UpdateRaceProgress(this.m_Players);
 
         Debug.Log("El orden de carrera es: " + raceOrder);
     }
@@ -83,20 +87,30 @@ public class PolePositionManager : NetworkBehaviour
         float minArcL =
             this.m_CircuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
-        //Se actualizan los datos de recuperación de choques del jugador
-        this.m_Players[ID].lastSafePosition = carProj;
-        this.m_Players[ID].crashRecoverForward = m_CircuitController.GetSegment(segIdx);
-
-        //Comprobación de si va hacia atrás (según el ángulo entre el forward del coche y la dirección del circuito)
-        float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
-        this.m_Players[ID].goingBackwards = ang > goingBackwardsThreshold;
-
-        if (this.m_Players[ID].goingBackwards) Debug.Log(m_Players[ID].name + " sentido contrario: " + m_Players[ID].goingBackwards);
-
-        this.m_DebuggingSpheres[ID].transform.position = carProj;
-
         minArcL += m_CircuitController.CircuitLength * m_Players[ID].CurrentLap;
 
         return minArcL;
+    }
+
+    public void UpdateRaceCarState(PlayerInfo player)
+    {
+        Vector3 carPos = player.transform.position;
+        Vector3 carFwd = player.transform.forward;
+
+        int segIdx;
+        float carDist;
+        Vector3 carProj;
+
+        float minArcL =
+          this.m_CircuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
+
+        //Se actualizan los datos de recuperación de choques del jugador
+        player.CmdUpdateCrashInfo(carProj, m_CircuitController.GetSegment(segIdx));
+
+        //Comprobación de si va hacia atrás (según el ángulo entre el forward del coche y la dirección del circuito)
+        float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
+        player.CmdUpdateGoingBackwards(ang > goingBackwardsThreshold);
+
+        if (player.goingBackwards) Debug.Log(player.name + " sentido contrario: " + player.goingBackwards);
     }
 }
