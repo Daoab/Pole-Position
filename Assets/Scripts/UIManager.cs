@@ -70,23 +70,23 @@ public class UIManager : MonoBehaviour
     private void StartHost()
     {
         m_NetworkManager.StartHost();
-        //ActivateUsernameUI();
-        ActivateRaceUI();
+        ActivateUsernameUI();
+        //ActivateRaceUI();
     }
 
     private void StartClient()
     {
         m_NetworkManager.StartClient();
         m_NetworkManager.networkAddress = inputFieldIP.text;
-        //ActivateUsernameUI();
-        ActivateRaceUI();
+        ActivateUsernameUI();
+        //ActivateRaceUI();
     }
 
     private void StartServer()
     {
         m_NetworkManager.StartServer();
-        //ActivateUsernameUI();
-        ActivateRaceUI();
+        ActivateUsernameUI();
+        //ActivateRaceUI();
     }
     #endregion
 
@@ -176,9 +176,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void UpdateLapProgress(PlayerInfo player)
+    public void UpdateLapProgress(/*PlayerInfo player*/int lap)
     {
-        textLaps.text = "LAP: " + player.CurrentLap + "/" + raceNetWorkBehaviour.numLaps;
+        //textLaps.text = "LAP: " + player.CurrentLap + "/" + raceNetWorkBehaviour.numLaps;
+        textLaps.text = "LAP: " + lap + "/" + raceNetWorkBehaviour.numLaps;
     }
 
     public void UpdateTime(float currentTime, float totalTime)

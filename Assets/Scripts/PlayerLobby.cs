@@ -197,7 +197,7 @@ public class PlayerLobby : NetworkBehaviour
 
     private void Update()
     {
-        if(isLocalPlayer)
+        /*if(isLocalPlayer)
         {
             string aux = "";
 
@@ -205,7 +205,7 @@ public class PlayerLobby : NetworkBehaviour
                 aux += f.ToString() + " ";
 
             DebugText.text = aux.ToString();
-        }
+        }*/
     }
 
     //Se muestra al jugador host el botón de iniciar la partida cuando la mayoría de jugadores están listos

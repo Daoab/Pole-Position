@@ -5238,6 +5238,7 @@ MonoBehaviour:
   textLaps: {fileID: 6415909393398217422}
   textPosition: {fileID: 6415909392756466390}
   textTime: {fileID: 3975668684761471572}
+  turnBack: {fileID: 257698290173232726}
   playerListUI: {fileID: 487526542776789084}
   colorChangeButtons: {fileID: 8371656202838946743}
   carBody: {fileID: 6415909392717831237}
@@ -5578,7 +5579,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6415909394322138282
 RectTransform:
   m_ObjectHideFlags: 0

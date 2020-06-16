@@ -24,7 +24,13 @@ public class SyncListPlayerData : SyncList<PlayerData> {}
 //Posibles problemas de concurrencia al escribir en la lista, depende que cómo lo tenga hecho Mirror
 public class LobbyNetworkBehaviour : NetworkBehaviour
 {
-    private SyncListPlayerData playerDataList = new SyncListPlayerData();
+    //Sustuir por Commands y Rpcs que actualicen los datos según la network id
+    //Tener hooks que llamen commands y rpcs (o igual no hace falta) y se actualice los datos
+    //del jugador con tal id de network
+
+    //Podemos tener el coche debajo del player lobby y activarlo cuando 
+    //estén todos listos. 
+    readonly SyncListPlayerData playerDataList = new SyncListPlayerData();
 
     SemaphoreSlim updatePlayersReady = new SemaphoreSlim(1, 1);
 
@@ -108,13 +114,15 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
     //Se actualiza el color de un jugador según su id
     public void UpdatePlayerColor(int id, Color color)
     {
+        
         int index = FindPlayerDataIndex(id);
 
         //La synclist solo se actualiza si le metemos una struct nueva, no podemos modificar la lista directamente
         PlayerData newPlayerData = playerDataList[index];
 
-        newPlayerData.color = color;
+        //Quizás es que no le da tiempo a actualizar el color del coche y por eso da el error de serialize??
 
+        newPlayerData.color = color;
         playerDataList[index] = newPlayerData;
     }
 
@@ -173,7 +181,7 @@ public class LobbyNetworkBehaviour : NetworkBehaviour
 
         playerDataList.RemoveAt(index);
 
-        if (playerDataList.Count > 1)
+        if (playerDataList.Count > 1) //Puede coincidir con que otro jugador se añada
         {
             UpdatePlayerListUI();
         }

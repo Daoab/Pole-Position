@@ -88,7 +88,7 @@ public class SetupPlayer : NetworkBehaviour
             ConfigureCamera();
             updateRaceOrderTrigger.SetActive(true);
             m_PolePositionManager.UpdateRaceProgress();
-            m_UIManager.UpdateLapProgress(m_PlayerInfo);
+            m_UIManager.UpdateLapProgress(m_PlayerInfo.CurrentLap);
         }
     }
 

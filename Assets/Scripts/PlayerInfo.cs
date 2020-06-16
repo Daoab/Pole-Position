@@ -12,7 +12,7 @@ public class PlayerInfo : NetworkBehaviour
 
     [SyncVar] public int CurrentPosition;
 
-    [SyncVar] public int CurrentLap;
+    [SyncVar (hook =nameof(UpdateLapUI))] public int CurrentLap = 0;
 
     [SyncVar] public Color color;
 
@@ -45,7 +45,12 @@ public class PlayerInfo : NetworkBehaviour
     public void CmdAddLap()
     {
         this.CurrentLap++;
-        uIManager.UpdateLapProgress(this);
+    }
+
+    public void UpdateLapUI(int oldValue, int newValue)
+    {
+        if(isLocalPlayer)
+            uIManager.UpdateLapProgress(newValue);
     }
 
     [Command]
