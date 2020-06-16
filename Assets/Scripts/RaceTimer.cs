@@ -17,7 +17,7 @@ public class RaceTimer : NetworkBehaviour
     private void Start()
     {
         playerInfo = GetComponent<PlayerInfo>();
-        lapTimes = new float[FindObjectOfType<RaceNetworkBehaviour>().GetMaxLaps()];
+        //lapTimes = new float[FindObjectOfType<RaceNetworkBehaviour>().GetMaxLaps()];
         uIManager = FindObjectOfType<UIManager>();
     }
 

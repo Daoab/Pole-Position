@@ -76,6 +76,7 @@ GameObject:
   - component: {fileID: 528894820688187042}
   - component: {fileID: 9124325200002634512}
   - component: {fileID: 449604030476931776}
+  - component: {fileID: 1665457345052159719}
   - component: {fileID: 3466774584401487325}
   - component: {fileID: 1137246169109603126}
   - component: {fileID: 8361620315330804865}
@@ -184,6 +185,21 @@ MonoBehaviour:
   debug: {fileID: 0}
   updateRaceOrderTrigger: {fileID: 3809203584143350824}
   carBody: {fileID: 3124799276312422027}
+  playerCar: {fileID: 5703065227131910028}
+--- !u!114 &1665457345052159719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508097745644926054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34be04bd0b754c6478b8c2a148e0ffb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
 --- !u!114 &3466774584401487325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,9 +216,11 @@ MonoBehaviour:
   syncInterval: 0.1
   Name: 
   ID: 0
+  color: {r: 0, g: 0, b: 0, a: 0}
+  isReady: 0
+  isLeader: 0
   CurrentPosition: 0
   CurrentLap: 0
-  color: {r: 0, g: 0, b: 0, a: 0}
   distanceTravelled: 0
   goingBackwards: 0
   raceEnded: 0
@@ -248,7 +266,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1508097745644926054}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2d5c381dbf7b18643ac833adf9cb6418, type: 3}
   m_Name: 
@@ -663,7 +681,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8802468666335908270
 Transform:
   m_ObjectHideFlags: 0

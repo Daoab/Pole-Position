@@ -4,15 +4,9 @@ using System.Collections;
 using UnityEngine;
 using Mirror;
 
-/*
-	Documentation: https://mirror-networking.com/docs/Guides/NetworkBehaviour.html
-	API Reference: https://mirror-networking.com/docs/api/Mirror.NetworkBehaviour.html
-*/
-
 public class PlayerController : NetworkBehaviour
 {
     #region Variables
-
     [Header("Movement")] public List<AxleInfo> axleInfos;
     public float forwardMotorTorque = 100000;
     public float backwardMotorTorque = 50000;

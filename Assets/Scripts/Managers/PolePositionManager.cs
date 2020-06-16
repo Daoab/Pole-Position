@@ -13,7 +13,11 @@ public class PolePositionManager : NetworkBehaviour
     private UIManager uiManager;
 
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4);
+    public PlayerInfo playerLeader;
     SemaphoreSlim modifyPlayerSemaphore = new SemaphoreSlim(1, 1);
+
+    [SyncVar] bool allPlayersReady = false;
+    SemaphoreSlim updatePlayersReady = new SemaphoreSlim(1, 1);
 
     private CircuitController m_CircuitController;
 
@@ -21,6 +25,11 @@ public class PolePositionManager : NetworkBehaviour
     [SerializeField][Range(0f, 180f)] float goingBackwardsThreshold = 110f;
 
     private float circuitLength = 0f;
+
+    [SyncVar] public int numLaps = 1;
+    [SerializeField] private int maxLaps = 6;
+
+    LayerMask raceEndedLayer;
 
     private void Awake()
     {
@@ -30,11 +39,14 @@ public class PolePositionManager : NetworkBehaviour
         circuitLength = m_CircuitController.CircuitLength;
 
         uiManager = FindObjectOfType<UIManager>();
+        raceEndedLayer = LayerMask.NameToLayer("PlayerRaceEnded");
     }
 
+    #region PlayerList Methods
     public void AddPlayer(PlayerInfo player)
     {
         modifyPlayerSemaphore.Wait();
+        if (player.isLeader) playerLeader = player;
         m_Players.Add(player);
         modifyPlayerSemaphore.Release();
     }
@@ -43,9 +55,39 @@ public class PolePositionManager : NetworkBehaviour
     {
         modifyPlayerSemaphore.Wait();
         m_Players.Remove(player);
+        playerLeader.GetComponent<PlayerLobby>().CmdUpdateUI();
         modifyPlayerSemaphore.Release();
     }
     
+    public bool CheckIsLeader()
+    {
+        return m_Players.Count == 0;
+    }
+    #endregion
+
+    #region Lobby
+    public void UpdateNumberOfPlayersReady()
+    {
+        updatePlayersReady.Wait();
+
+        int numPlayersReady = 0;
+
+        foreach(PlayerInfo player in m_Players)
+        {
+            if (player.isReady)
+                numPlayersReady++;
+        }
+
+        //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
+        allPlayersReady = (numPlayersReady > 1 && numPlayersReady >= (m_Players.Count / 2) + 1);
+        allPlayersReady = true;
+        playerLeader.GetComponent<PlayerLobby>().UpdateGoButtonState(allPlayersReady);
+
+        updatePlayersReady.Release();
+    }
+    #endregion
+
+    #region Race
     //Calcula la distancia que han recorrido los jugadores en total en el circuito, y los ordena según esa distancia,
     //de modo que se pueda obtener su posición en la carrera
     public void UpdateRaceProgress()
@@ -55,7 +97,7 @@ public class PolePositionManager : NetworkBehaviour
 
         for (int i = 0; i < m_Players.Count; ++i)
         {
-            this.m_Players[i].distanceTravelled = ComputeCarArcLength(i);
+            this.m_Players[i].GetComponent<SetupPlayer>().CmdChangeDistanceTravelled(ComputeCarArcLength(i));
             Debug.Log(this.m_Players[i].Name + " " + this.m_Players[i].distanceTravelled);
         }
 
@@ -66,7 +108,7 @@ public class PolePositionManager : NetworkBehaviour
         for(int i = 0; i < m_Players.Count; i++)
         {
             raceOrder += this.m_Players[i].Name + " ";
-            this.m_Players[i].CurrentPosition = i + 1;
+            this.m_Players[i].GetComponent<SetupPlayer>().CmdChangeCurrentPosition(i + 1);
         }
 
         uiManager.UpdateRaceProgress(this.m_Players);
@@ -98,7 +140,7 @@ public class PolePositionManager : NetworkBehaviour
     }
 
     //Comprueba si el coche está yendo marcha atrás, y establece el punto al que se ha de colocar al jugador en caso de que vuelque.
-    public void UpdateRaceCarState(PlayerInfo player)
+    public void UpdateRaceCarState(PlayerInfo player, SetupPlayer setupPlayer)
     {
         Vector3 carPos = player.transform.position;
         Vector3 carFwd = player.transform.forward;
@@ -111,12 +153,77 @@ public class PolePositionManager : NetworkBehaviour
           this.m_CircuitController.ComputeClosestPointArcLength(carPos, out segIdx, out carProj, out carDist);
 
         //Se actualizan los datos de recuperación de choques del jugador
-        player.CmdUpdateCrashInfo(carProj, m_CircuitController.GetSegment(segIdx));
+        setupPlayer.CmdChangeLastSafePosition(carProj);
+        setupPlayer.CmdChangeCrashRecoverForward(m_CircuitController.GetSegment(segIdx));
 
         //Comprobación de si va hacia atrás (según el ángulo entre el forward del coche y la dirección del circuito)
         float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
-        player.CmdUpdateGoingBackwards(ang > goingBackwardsThreshold);
+        setupPlayer.CmdChangeGoingBackwards(ang > goingBackwardsThreshold);
 
         if (player.goingBackwards) Debug.Log(player.name + " sentido contrario: " + player.goingBackwards);
     }
+    #endregion
+
+    #region laps
+    public void AddLaps()
+    {
+        numLaps++;
+        numLaps = Mathf.Clamp(numLaps, 1, maxLaps);
+        uiManager.UpdateLapsCounter(numLaps);
+    }
+
+    public void DecrementLaps()
+    {
+        numLaps--;
+        numLaps = Mathf.Clamp(numLaps, 1, maxLaps);
+        uiManager.UpdateLapsCounter(numLaps);
+    }
+
+    public int GetMaxLaps()
+    {
+        return maxLaps;
+    }
+    #endregion
+
+    //Se muestra en la interfaz el nombre de los jugadores conectados, y si están listos o no
+    public void UpdatePlayerListUI()
+    {
+        uiManager.UpdatePlayerListUI(m_Players);
+    }
+
+    #region RaceStart Rpc and RaceEnd
+    [ClientRpc]
+    public void RpcStartRace()
+    {
+        Debug.Log("Rpc");
+        PlayerLobby[] playersLobby = FindObjectsOfType<PlayerLobby>();
+
+        foreach (PlayerLobby p in playersLobby)
+        {
+            p.InstantiateCar();
+        }
+    }
+
+    //Cuando un jugador termina la carrera, se indica que la ha terminado, y se le permite seguir jugando.
+    //Sin embargo, no puede chocarse con otros jugadores y se para su contador de tiempo.
+    public void CheckRaceEnd(PlayerInfo player)
+    {
+        /*
+        if(player.CurrentLap >= numLaps)
+        {
+            Debug.Log("Race end");
+            player.CmdRaceEnded(true);
+            player.GetComponent<RaceTimer>().StopTimer();
+
+            player.gameObject.layer = raceEndedLayer;
+            Transform[] children = player.GetComponentsInChildren<Transform>();
+            foreach (Transform child in children)
+                child.gameObject.layer = raceEndedLayer;
+            
+            //Cuando la mayoría de jugadores han acabado la carrera se activa la interfaz de victoria
+            //Activar UI de victoria
+            //Mantener posición de los jugadores que han acabado
+        }*/
+    }
+    #endregion
 }

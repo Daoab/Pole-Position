@@ -16,11 +16,11 @@ public class ChatWindowPolePosition : MonoBehaviour
     }
 
     //Muestra por el chat el mensaje que han mandado los jugadores, y cambia el nombre del jugador en función de si es el local o no
-    void OnPlayerMessage(PlayerLobby player, string message)
+    void OnPlayerMessage(PlayerInfo player, string message)
     {
         string prettyMessage = player.isLocalPlayer ?
-            $"<color=red>{player.playerName}: </color> {message}" :
-            $"<color=blue>{player.playerName}: </color> {message}";
+            $"<color=red>{player.Name}: </color> {message}" :
+            $"<color=blue>{player.Name}: </color> {message}";
 
         AppendMessage(prettyMessage);
     }

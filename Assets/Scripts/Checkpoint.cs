@@ -9,12 +9,12 @@ public class Checkpoint : MonoBehaviour
 
     public float distanceToNextCheckpoint;
 
-    RaceNetworkBehaviour raceNetworkBehaviour;
+    //RaceNetworkBehaviour raceNetworkBehaviour;
     UIManager uIManager;
 
     private void Start()
     {
-        raceNetworkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
+        //raceNetworkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
         distanceToNextCheckpoint = Mathf.Abs(Vector3.Distance(gameObject.transform.position, nextCheckpoint.gameObject.transform.position));
         uIManager = FindObjectOfType<UIManager>();
     }
@@ -27,11 +27,12 @@ public class Checkpoint : MonoBehaviour
         if(other.tag == "Player" && other.GetComponent<SetupPlayer>().isLocalPlayer)
         {
             PlayerInfo playerInfo = other.GetComponent<PlayerInfo>();
+            SetupPlayer setupPlayer = other.GetComponent<SetupPlayer>();
 
             if (isGoal)
             {
-                playerInfo.CmdAddLap();
-                raceNetworkBehaviour.CheckRaceEnd(playerInfo);
+                setupPlayer.CmdChangeCurrentLap(playerInfo.CurrentLap + 1);
+                //raceNetworkBehaviour.CheckRaceEnd(playerInfo);
             }
 
             nextCheckpoint.gameObject.SetActive(true);

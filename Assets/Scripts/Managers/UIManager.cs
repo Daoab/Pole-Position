@@ -12,7 +12,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] Text DebugText;
 
     private NetworkManagerPolePosition m_NetworkManager;
-    private RaceNetworkBehaviour raceNetWorkBehaviour;
+    private PolePositionManager polePositionManager;
 
     #region UIReferences
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
@@ -28,6 +28,14 @@ public class UIManager : MonoBehaviour
 
     [Header("Chat UI")]
     [SerializeField] private GameObject chatUI;
+
+    [Header("Player List UI")]
+    [SerializeField] Text[] playerNamesList;
+    [SerializeField] Image[] playerReadyImage;
+    [SerializeField] string defaultText = "Waiting...";
+    [SerializeField] Text players;
+    [SerializeField] Color playerReadyColor = Color.green;
+    [SerializeField] Color playerNotReadyColor = Color.red;
 
     [Header("Race Settings")]
     [SerializeField] private Button readyButton;
@@ -55,7 +63,7 @@ public class UIManager : MonoBehaviour
     private void Awake()
     {
         m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
-        raceNetWorkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
+        polePositionManager = FindObjectOfType<PolePositionManager>();
     }
 
     private void Start()
@@ -111,20 +119,6 @@ public class UIManager : MonoBehaviour
         lapsUI.gameObject.SetActive(true);
     }
 
-    public void ActivateGoButton()
-    {
-        goButton.gameObject.SetActive(true);
-
-        goButton.onClick.AddListener(() => raceNetWorkBehaviour.StartRace());
-    }
-
-    public void DeactivateGoButton()
-    {
-        goButton.onClick.RemoveAllListeners();
-
-        goButton.gameObject.SetActive(false);
-    }
-
     private void ActivateMainMenu()
     {
         mainMenu.SetActive(true);
@@ -176,10 +170,25 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void UpdateLapProgress(/*PlayerInfo player*/int lap)
+    public void UpdatePlayerListUI(List<PlayerInfo> players)
     {
-        //textLaps.text = "LAP: " + player.CurrentLap + "/" + raceNetWorkBehaviour.numLaps;
-        textLaps.text = "LAP: " + lap + "/" + raceNetWorkBehaviour.numLaps;
+        for (int i = 0; i < playerNamesList.Length; i++)
+        {
+            playerNamesList[i].text = defaultText;
+            playerReadyImage[i].color = playerNotReadyColor;
+        }
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            playerNamesList[i].text = players[i].Name;
+            if (players[i].isReady)
+                playerReadyImage[i].color = playerReadyColor;
+        }
+    }
+
+    public void UpdateLapProgress(int lap)
+    {
+        textLaps.text = "LAP: " + lap.ToString() + "/" + polePositionManager.numLaps.ToString();
     }
 
     public void UpdateTime(float currentTime, float totalTime)
@@ -236,6 +245,11 @@ public class UIManager : MonoBehaviour
         return playerListUI;
     }
     
+    public Button GetGoButtonReference()
+    {
+        return goButton;
+    }
+
     public Text GetDebugText()
     {
         return DebugText;

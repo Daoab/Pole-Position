@@ -24,6 +24,17 @@ public class SetupPlayer : NetworkBehaviour
     private PolePositionManager m_PolePositionManager;
 
     [SerializeField] MeshRenderer carBody;
+    [SerializeField] GameObject playerCar;
+
+    private bool carStarted = false;
+
+    public static event Action<PlayerInfo, int> OnCurrentPosition;
+    public static event Action<PlayerInfo, int> OnCurrentLap;
+    public static event Action<PlayerInfo, float> OnDistanceTravelled;
+    public static event Action<PlayerInfo, bool> OnGoingBackwards;
+    public static event Action<PlayerInfo, bool> OnRaceEnded;
+    public static event Action<PlayerInfo, Vector3> OnLastSafePosition;
+    public static event Action<PlayerInfo, Vector3> OnCrashRecoverForward;
 
     #region Start & Stop Callbacks
 
@@ -46,10 +57,10 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartClient();
         m_PlayerInfo.ID = m_ID;
-        m_PlayerInfo.Name = "Player" + m_ID;
+        //m_PlayerInfo.Name = "Player" + m_ID;
         m_PlayerInfo.CurrentLap = 0;
+        m_PlayerInfo.isLeader = m_PolePositionManager.CheckIsLeader();
         m_PolePositionManager.AddPlayer(m_PlayerInfo);
-        m_PolePositionManager.UpdateRaceProgress();
     }
 
     /// <summary>
@@ -79,14 +90,22 @@ public class SetupPlayer : NetworkBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    public void StartCar()
     {
+        playerCar.SetActive(true);
+        carBody.materials[1].color = m_PlayerInfo.color;
+
         if (isLocalPlayer)
         {
+            m_UIManager.ActivateRaceUI();
+            carStarted = true;
+
             m_PlayerController.enabled = true;
             m_PlayerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
+
             ConfigureCamera();
             updateRaceOrderTrigger.SetActive(true);
+
             m_PolePositionManager.UpdateRaceProgress();
             m_UIManager.UpdateLapProgress(m_PlayerInfo.CurrentLap);
         }
@@ -94,16 +113,10 @@ public class SetupPlayer : NetworkBehaviour
 
     private void Update()
     {
-        if (isLocalPlayer)
+        if (isLocalPlayer && carStarted)
         {
-            m_PolePositionManager.UpdateRaceCarState(m_PlayerInfo);
+            m_PolePositionManager.UpdateRaceCarState(m_PlayerInfo, this);
         }
-    }
-
-    public void UpdatePlayerModelColor(Color color)
-    {
-        Debug.Log(GetComponent<PlayerInfo>().color);
-        carBody.materials[1].color = color;
     }
 
     void OnSpeedChangeEventHandler(float speed)
@@ -115,4 +128,97 @@ public class SetupPlayer : NetworkBehaviour
     {
         if (Camera.main != null) Camera.main.gameObject.GetComponent<CameraController>().m_Focus = this.gameObject;
     }
+
+    #region Race variable callbacks
+    //Command y Rpc para currentPosition
+    [Command]
+    public void CmdChangeCurrentPosition(int currentPosition)
+    {
+        RpcChangeCurrentPosition(currentPosition);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCurrentPosition(int currentPosition)
+    {
+        OnCurrentPosition?.Invoke(m_PlayerInfo, currentPosition);
+    }
+
+    //Command y Rpc para CurrentLap
+    [Command]
+    public void CmdChangeCurrentLap(int currentLap)
+    {
+        RpcChangeCurrentLap(currentLap);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCurrentLap(int currentLap)
+    {
+        OnCurrentLap?.Invoke(m_PlayerInfo, currentLap);
+    }
+
+    //Command y Rpc para distanceTravelled
+    [Command]
+    public void CmdChangeDistanceTravelled(float distanceTravelled)
+    {
+        RpcChangeDistanceTravelled(distanceTravelled);
+    }
+
+    [ClientRpc]
+    public void RpcChangeDistanceTravelled(float distanceTravelled)
+    {
+        OnDistanceTravelled?.Invoke(m_PlayerInfo, distanceTravelled);
+    }
+
+    //Command y Rpc para goingBackwards
+    [Command]
+    public void CmdChangeGoingBackwards(bool goingBackwards)
+    {
+        RpcChangeGoingBackwards(goingBackwards);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGoingBackwards(bool goingBackwards)
+    {
+        OnGoingBackwards?.Invoke(m_PlayerInfo, goingBackwards);
+    }
+
+    //Command y Rpc para raceEnded
+    [Command]
+    public void CmdChangeRanceEnded(bool raceEnded)
+    {
+        RpcChangeRaceEnded(raceEnded);
+    }
+
+    [ClientRpc]
+    public void RpcChangeRaceEnded(bool raceEnded)
+    {
+        OnRaceEnded?.Invoke(m_PlayerInfo, raceEnded);
+    }
+
+    //Command y Rpc para lastSafePosition
+    [Command]
+    public void CmdChangeLastSafePosition(Vector3 lastSafePosition)
+    {
+        RpcChangeLastSafePosition(lastSafePosition);
+    }
+
+    [ClientRpc]
+    public void RpcChangeLastSafePosition(Vector3 lastSafePosition)
+    {
+        OnLastSafePosition?.Invoke(m_PlayerInfo, lastSafePosition);
+    }
+
+    //Command y Rpc para crashRecoverForward
+    [Command]
+    public void CmdChangeCrashRecoverForward(Vector3 crashRecoverForward)
+    {
+        RpcChangeCrashRecoverForward(crashRecoverForward);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCrashRecoverForward(Vector3 crashRecoverForward)
+    {
+        OnCrashRecoverForward?.Invoke(m_PlayerInfo, crashRecoverForward);
+    }
+    #endregion
 }
