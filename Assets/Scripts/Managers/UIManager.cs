@@ -33,7 +33,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] Text[] playerNamesList;
     [SerializeField] Image[] playerReadyImage;
     [SerializeField] string defaultText = "Waiting...";
-    [SerializeField] Text players;
     [SerializeField] Color playerReadyColor = Color.green;
     [SerializeField] Color playerNotReadyColor = Color.red;
 
@@ -41,6 +40,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button readyButton;
     [SerializeField] private Button goButton;
     [SerializeField] private GameObject lapsUI;
+    [SerializeField] private Text lapsSettings;
+    [SerializeField] private Button addButton;
+    [SerializeField] private Button minusButton;
 
     [Header("In-Game HUD")] 
     [SerializeField] private GameObject inGameHUD;
@@ -60,12 +62,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject carBody;
     #endregion
 
-    private void Awake()
-    {
-        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
-        polePositionManager = FindObjectOfType<PolePositionManager>();
-    }
-
     private void Start()
     {
         buttonHost.onClick.AddListener(() => StartHost());
@@ -77,24 +73,28 @@ public class UIManager : MonoBehaviour
     #region Setup Mirror
     private void StartHost()
     {
+        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
+
         m_NetworkManager.StartHost();
         ActivateUsernameUI();
-        //ActivateRaceUI();
     }
 
     private void StartClient()
     {
+        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
+
         m_NetworkManager.StartClient();
         m_NetworkManager.networkAddress = inputFieldIP.text;
         ActivateUsernameUI();
-        //ActivateRaceUI();
     }
 
     private void StartServer()
     {
+        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
+
+        m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
         m_NetworkManager.StartServer();
         ActivateUsernameUI();
-        //ActivateRaceUI();
     }
     #endregion
 
@@ -148,11 +148,6 @@ public class UIManager : MonoBehaviour
         textSpeed.text = "Speed " + speed + " Km/h";
     }
 
-    public void UpdateLapsCounter(int numLaps)
-    {
-        lapsUI.GetComponentInChildren<Text>().text = "Laps: " + numLaps.ToString();
-    }
-
     public void UpdateCarPreviewColor(Color color)
     {
         Material carMaterial = carBody.GetComponent<MeshRenderer>().materials[1];
@@ -186,9 +181,15 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public void UpdateLapsSettingsUI(int numLaps)
+    {
+        lapsSettings.text = "Laps: " + numLaps.ToString();
+    }
+
     public void UpdateLapProgress(int lap)
     {
-        textLaps.text = "LAP: " + lap.ToString() + "/" + polePositionManager.numLaps.ToString();
+        textLaps.text = lap.ToString() + "/" + FindObjectOfType<PolePositionManager>().numLaps.ToString();
+        //textLaps.text = "LAP: " + lap.ToString() + "/" + polePositionManager.numLaps.ToString();
     }
 
     public void UpdateTime(float currentTime, float totalTime)
@@ -248,6 +249,16 @@ public class UIManager : MonoBehaviour
     public Button GetGoButtonReference()
     {
         return goButton;
+    }
+
+    public Button GetMinusButton()
+    {
+        return minusButton;
+    }
+
+    public Button GetAddButton()
+    {
+        return addButton;
     }
 
     public Text GetDebugText()

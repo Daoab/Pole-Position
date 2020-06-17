@@ -1,24 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 using Mirror;
 
 public class RaceTimer : NetworkBehaviour
 {
     PlayerInfo playerInfo;
-    UIManager uIManager;
 
     bool timerRunning = true;
-    int index = 0;
 
-    [SyncVar] public float totalTime = 0f;
-    float[] lapTimes;
+    public static event Action<PlayerInfo, float> OnTotalTime;
+    public static event Action<PlayerInfo, float> OnLapTime;
+
+    UIManager uIManager;
 
     private void Start()
     {
         playerInfo = GetComponent<PlayerInfo>();
-        //lapTimes = new float[FindObjectOfType<RaceNetworkBehaviour>().GetMaxLaps()];
         uIManager = FindObjectOfType<UIManager>();
+
+        StartCoroutine(NotifyTimeChange());
     }
 
     void Update()
@@ -28,9 +30,10 @@ public class RaceTimer : NetworkBehaviour
             //Truncar a dos decimales
             float deltaTime = Mathf.Round(Time.deltaTime * 100f) * 0.01f;
 
-            lapTimes[playerInfo.CurrentLap] += deltaTime;
-            CmdAddTotalTime(deltaTime);
-            uIManager.UpdateTime(lapTimes[playerInfo.CurrentLap], totalTime);
+            playerInfo.totalTime += deltaTime;
+            playerInfo.currentLapTime += deltaTime;
+
+            uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
         }
     }
 
@@ -39,19 +42,44 @@ public class RaceTimer : NetworkBehaviour
         timerRunning = false;
     }
 
-    public float GetTotalTime()
+    public void ResetLapTime()
     {
-        return totalTime;
+        playerInfo.currentLapTime = 0f;
     }
 
-    public float[] GetLapTimes()
+    IEnumerator NotifyTimeChange()
     {
-        return lapTimes;
+        yield return new WaitForSecondsRealtime(2f);
+
+        CmdChangeLapTime(playerInfo.currentLapTime);
+        CmdChangeTotalTime(playerInfo.totalTime);
+
+        StartCoroutine(NotifyTimeChange());
     }
 
+    //Command y Rpc para cambiar totalTime
     [Command]
-    public void CmdAddTotalTime(float time)
+    public void CmdChangeTotalTime(float totalTime)
     {
-        totalTime += time;
+        RpcChangeTotalTime(totalTime);
+    }
+
+    [ClientRpc]
+    public void RpcChangeTotalTime(float totalTime)
+    {
+        OnTotalTime?.Invoke(playerInfo, totalTime);
+    }
+
+    //Command y Rpc para cambiar LapTime
+    [Command]
+    public void CmdChangeLapTime(float lapTime)
+    {
+        RpcChangeLapTime(lapTime);
+    }
+
+    [ClientRpc]
+    public void RpcChangeLapTime(float lapTime)
+    {
+        OnLapTime?.Invoke(playerInfo, lapTime);
     }
 }

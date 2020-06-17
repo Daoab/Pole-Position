@@ -19,5 +19,5 @@ public class NetworkManagerPolePosition : NetworkManager
     {
         NetworkServer.Destroy(conn.identity.gameObject);
         base.OnClientDisconnect(conn);
-    }
+    }   
 }

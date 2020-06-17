@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Mirror;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PolePositionManager : NetworkBehaviour
 {
@@ -40,6 +41,12 @@ public class PolePositionManager : NetworkBehaviour
 
         uiManager = FindObjectOfType<UIManager>();
         raceEndedLayer = LayerMask.NameToLayer("PlayerRaceEnded");
+
+        Button minusButton = uiManager.GetMinusButton();
+        minusButton.onClick.AddListener(() => DecrementLaps());
+
+        Button addButton = uiManager.GetAddButton();
+        addButton.onClick.AddListener(() => AddLaps());
     }
 
     #region PlayerList Methods
@@ -167,16 +174,17 @@ public class PolePositionManager : NetworkBehaviour
     #region laps
     public void AddLaps()
     {
+        Debug.Log("AddLaps");
         numLaps++;
         numLaps = Mathf.Clamp(numLaps, 1, maxLaps);
-        uiManager.UpdateLapsCounter(numLaps);
+        uiManager.UpdateLapsSettingsUI(numLaps);
     }
 
     public void DecrementLaps()
     {
         numLaps--;
         numLaps = Mathf.Clamp(numLaps, 1, maxLaps);
-        uiManager.UpdateLapsCounter(numLaps);
+        uiManager.UpdateLapsSettingsUI(numLaps);
     }
 
     public int GetMaxLaps()
@@ -195,12 +203,9 @@ public class PolePositionManager : NetworkBehaviour
     [ClientRpc]
     public void RpcStartRace()
     {
-        Debug.Log("Rpc");
-        PlayerLobby[] playersLobby = FindObjectsOfType<PlayerLobby>();
-
-        foreach (PlayerLobby p in playersLobby)
+        foreach (PlayerInfo p in m_Players)
         {
-            p.InstantiateCar();
+            p.GetComponent<PlayerLobby>().InstantiateCar();
         }
     }
 

@@ -34,6 +34,10 @@ public class PlayerInfo : NetworkBehaviour
 
     //Dirección a la que mirará el jugador si choca
     [SyncVar] public Vector3 crashRecoverForward;
+
+    [SyncVar] public float totalTime = 0f;
+    
+    [SyncVar] public float currentLapTime = 0f;
     #endregion
 
     UIManager uiManager;
@@ -43,7 +47,7 @@ public class PlayerInfo : NetworkBehaviour
     {
         uiManager = FindObjectOfType<UIManager>();
         polePositionManager = FindObjectOfType<PolePositionManager>();
-        
+
         color.r = 245/255f;
         color.g = 73/255f;
         color.b = 93/255f;
@@ -63,6 +67,9 @@ public class PlayerInfo : NetworkBehaviour
         SetupPlayer.OnRaceEnded += ChangeRaceEnded;
         SetupPlayer.OnLastSafePosition += ChangeLastSafePosition;
         SetupPlayer.OnCrashRecoverForward += ChangeCrashRecoverForward;
+
+        RaceTimer.OnTotalTime += ChangeTotalTime;
+        RaceTimer.OnLapTime += ChangeLapTime;
     }
 
     #region Lobby Callbacks
@@ -100,10 +107,11 @@ public class PlayerInfo : NetworkBehaviour
 
     public void ChangeCurrentLap(PlayerInfo player, int currentLap)
     {
-        if (this.ID == player.ID) this.CurrentLap = currentLap;
+        
+        if (this.ID == player.ID)  this.CurrentLap = currentLap;
 
-        if (isLocalPlayer)
-            uiManager.UpdateLapProgress(this.CurrentLap);
+        if (this.isLocalPlayer)
+            uiManager.UpdateLapProgress(player.CurrentLap);
     }
 
     public void ChangeDistanceTravelled(PlayerInfo player, float distanceTravelled)
@@ -115,8 +123,8 @@ public class PlayerInfo : NetworkBehaviour
     {
         if (this.ID == player.ID) this.goingBackwards = goingBackwards;
 
-        if (isLocalPlayer)
-            uiManager.UpdateTurnBack(this.goingBackwards);
+        if (this.isLocalPlayer)
+            uiManager.UpdateTurnBack(player.goingBackwards);
     }
 
     public void ChangeRaceEnded(PlayerInfo player, bool raceEnded)
@@ -132,6 +140,22 @@ public class PlayerInfo : NetworkBehaviour
     public void ChangeCrashRecoverForward(PlayerInfo player, Vector3 crashRecoverForward)
     {
         if (this.ID == player.ID) this.crashRecoverForward = crashRecoverForward;
+    }
+
+    public void ChangeTotalTime(PlayerInfo player, float totalTime)
+    {
+        if (this.ID == player.ID) player.totalTime = totalTime;
+
+        if(this.isLocalPlayer)
+            uiManager.UpdateTime(this.currentLapTime, this.totalTime);
+    }
+
+    public void ChangeLapTime(PlayerInfo player, float lapTime)
+    {
+        if (this.ID == player.ID) player.currentLapTime = lapTime;
+
+        if (this.isLocalPlayer)
+            uiManager.UpdateTime(this.currentLapTime, this.totalTime);
     }
     #endregion
 }

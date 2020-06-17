@@ -28,10 +28,12 @@ public class Checkpoint : MonoBehaviour
         {
             PlayerInfo playerInfo = other.GetComponent<PlayerInfo>();
             SetupPlayer setupPlayer = other.GetComponent<SetupPlayer>();
+            RaceTimer raceTimer = other.GetComponent<RaceTimer>();
 
             if (isGoal)
             {
                 setupPlayer.CmdChangeCurrentLap(playerInfo.CurrentLap + 1);
+                raceTimer.ResetLapTime();
                 //raceNetworkBehaviour.CheckRaceEnd(playerInfo);
             }
 

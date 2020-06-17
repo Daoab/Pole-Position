@@ -226,6 +226,8 @@ MonoBehaviour:
   raceEnded: 0
   lastSafePosition: {x: 0, y: 0, z: 0}
   crashRecoverForward: {x: 0, y: 0, z: 0}
+  totalTime: 0
+  currentLapTime: 0
 --- !u!114 &1137246169109603126
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,7 +275,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  totalTime: 0
 --- !u!114 &6346869062069434778
 MonoBehaviour:
   m_ObjectHideFlags: 0

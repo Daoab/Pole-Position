@@ -97,6 +97,7 @@ public class SetupPlayer : NetworkBehaviour
 
         if (isLocalPlayer)
         {
+            GetComponent<RaceTimer>().enabled = true;
             m_UIManager.ActivateRaceUI();
             carStarted = true;
 

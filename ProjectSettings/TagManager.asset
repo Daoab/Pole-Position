@@ -10,6 +10,8 @@ TagManager:
   - UsernameUI
   - InGameHUD
   - debug
+  - MinusButton
+  - PlusButton
   layers:
   - Default
   - TransparentFX
