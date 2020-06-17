@@ -9,9 +9,9 @@ public class CameraController : MonoBehaviour
     [SerializeField] public Vector3 m_offset = new Vector3(10, 10, 10);
 
     [SerializeField] public CircuitController m_Circuit;
-    [SerializeField] private float m_Distance = 10;
-    [SerializeField] private float m_Elevation = 8;
-    [Range(0, 1)] [SerializeField] private float m_Following = 0.5f;
+    [SerializeField] private float m_Distance = 8; //10
+    [SerializeField] private float m_Elevation = 4; //8
+    [Range(0, 1)] [SerializeField] private float m_Following = 1f; //0,5
 
     private Vector3 m_Direction = Vector3.zero;
 
@@ -46,7 +46,7 @@ public class CameraController : MonoBehaviour
                 pathDir = new Vector3(pathDir.x, 0f, pathDir.z);
                 pathDir.Normalize();
 
-                this.m_Direction = Vector3.Lerp(this.m_Direction, pathDir, this.m_Following * Time.deltaTime);
+                this.m_Direction = Vector3.Lerp(this.m_Direction, pathDir, this.m_Following * Time.deltaTime * 2);
                 Vector3 offset = this.m_Direction * this.m_Distance;
                 offset = new Vector3(offset.x, m_Elevation, offset.z);
 
