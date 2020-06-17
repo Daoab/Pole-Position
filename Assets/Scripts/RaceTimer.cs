@@ -20,20 +20,17 @@ public class RaceTimer : NetworkBehaviour
         playerInfo = GetComponent<PlayerInfo>();
         uIManager = FindObjectOfType<UIManager>();
 
-        StartCoroutine(NotifyTimeChange());
+        StartCoroutine(UpdateUI());
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if(timerRunning && isLocalPlayer)
         {
-            //Truncar a dos decimales
-            float deltaTime = Mathf.Round(Time.deltaTime * 100f) * 0.01f;
+            playerInfo.totalTime += Time.fixedDeltaTime;//deltaTime;
+            playerInfo.currentLapTime += Time.fixedDeltaTime;//deltaTime;
 
-            playerInfo.totalTime += deltaTime;
-            playerInfo.currentLapTime += deltaTime;
-
-            uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
+            //uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
         }
     }
 
@@ -47,14 +44,18 @@ public class RaceTimer : NetworkBehaviour
         playerInfo.currentLapTime = 0f;
     }
 
-    IEnumerator NotifyTimeChange()
+    IEnumerator UpdateUI()
     {
-        yield return new WaitForSecondsRealtime(2f);
+        yield return new WaitForSecondsRealtime(0.1f);
 
-        CmdChangeLapTime(playerInfo.currentLapTime);
+        uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
+
+        StartCoroutine(UpdateUI());
+    }
+
+    public void GetFinalTimes()
+    {
         CmdChangeTotalTime(playerInfo.totalTime);
-
-        StartCoroutine(NotifyTimeChange());
     }
 
     //Command y Rpc para cambiar totalTime

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.UI;
@@ -89,26 +91,39 @@ public class SetupPlayer : NetworkBehaviour
         debug = m_UIManager.GetDebugText();
     }
 
-    // Start is called before the first frame update
-    public void StartCar()
+    public void PlaceCar()
     {
         playerCar.SetActive(true);
         carBody.materials[1].color = m_PlayerInfo.color;
 
         if (isLocalPlayer)
         {
-            GetComponent<RaceTimer>().enabled = true;
+            ConfigureCamera();
             m_UIManager.ActivateRaceUI();
+            m_PolePositionManager.UpdateRaceProgress();
+            m_UIManager.UpdateLapProgress(m_PlayerInfo.CurrentLap);
+            StartCoroutine(Timer());
+        }
+    }
+
+    IEnumerator Timer()
+    {
+        m_UIManager.ActivateCountdown();
+        yield return new WaitForSecondsRealtime(m_PolePositionManager.countdown);
+        StartCar();
+    }
+
+    // Start is called before the first frame update
+    public void StartCar()
+    {
+        if (isLocalPlayer)
+        {
+            GetComponent<RaceTimer>().enabled = true;
             carStarted = true;
 
             m_PlayerController.enabled = true;
             m_PlayerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
-
-            ConfigureCamera();
             updateRaceOrderTrigger.SetActive(true);
-
-            m_PolePositionManager.UpdateRaceProgress();
-            m_UIManager.UpdateLapProgress(m_PlayerInfo.CurrentLap);
         }
     }
 

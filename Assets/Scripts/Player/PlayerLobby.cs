@@ -81,7 +81,7 @@ public class PlayerLobby : NetworkBehaviour
 
     public void InstantiateCar()
     {
-        GetComponent<SetupPlayer>().StartCar();
+        GetComponent<SetupPlayer>().PlaceCar();
     }
 
     #region Commands y Rpcs Chat

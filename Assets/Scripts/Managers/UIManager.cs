@@ -51,6 +51,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Text textPosition;
     [SerializeField] private Text textTime;
     [SerializeField] private Image turnBack;
+    [SerializeField] private GameObject countdownText;
     [Space]
 
     [SerializeField] GameObject playerListUI;
@@ -139,6 +140,12 @@ public class UIManager : MonoBehaviour
         goButton.gameObject.SetActive(false);
 
         inGameHUD.SetActive(true);
+    }
+
+    public void ActivateCountdown()
+    {
+        countdownText.SetActive(true);
+        countdownText.GetComponent<Countdown>().StartCountdown();
     }
     #endregion
 

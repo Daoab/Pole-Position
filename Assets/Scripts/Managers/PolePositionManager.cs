@@ -30,6 +30,8 @@ public class PolePositionManager : NetworkBehaviour
     [SyncVar] public int numLaps = 1;
     [SerializeField] private int maxLaps = 6;
 
+    public int countdown = 3;
+
     LayerMask raceEndedLayer;
 
     private void Awake()
@@ -87,7 +89,7 @@ public class PolePositionManager : NetworkBehaviour
 
         //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
         allPlayersReady = (numPlayersReady > 1 && numPlayersReady >= (m_Players.Count / 2) + 1);
-        allPlayersReady = true;
+        //allPlayersReady = true;
         playerLeader.GetComponent<PlayerLobby>().UpdateGoButtonState(allPlayersReady);
 
         updatePlayersReady.Release();

@@ -166,7 +166,7 @@ public class PlayerController : NetworkBehaviour
         foreach (var axleInfo in axleInfos)
         {
             axleInfo.leftWheel.attachedRigidbody.AddForce(
-                /*-transform.up*/ -Vector3.up * (downForce * axleInfo.leftWheel.attachedRigidbody.velocity.magnitude));
+                -Vector3.up * (downForce * axleInfo.leftWheel.attachedRigidbody.velocity.magnitude));
         }
     }
 

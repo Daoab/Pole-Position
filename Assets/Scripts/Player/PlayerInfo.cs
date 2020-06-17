@@ -111,7 +111,7 @@ public class PlayerInfo : NetworkBehaviour
         if (this.ID == player.ID)  this.CurrentLap = currentLap;
 
         if (this.isLocalPlayer)
-            uiManager.UpdateLapProgress(player.CurrentLap);
+            uiManager.UpdateLapProgress(this.CurrentLap);
     }
 
     public void ChangeDistanceTravelled(PlayerInfo player, float distanceTravelled)
@@ -124,7 +124,7 @@ public class PlayerInfo : NetworkBehaviour
         if (this.ID == player.ID) this.goingBackwards = goingBackwards;
 
         if (this.isLocalPlayer)
-            uiManager.UpdateTurnBack(player.goingBackwards);
+            uiManager.UpdateTurnBack(this.goingBackwards);
     }
 
     public void ChangeRaceEnded(PlayerInfo player, bool raceEnded)
