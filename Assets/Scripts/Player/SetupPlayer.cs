@@ -37,6 +37,7 @@ public class SetupPlayer : NetworkBehaviour
     public static event Action<PlayerInfo, bool> OnRaceEnded;
     public static event Action<PlayerInfo, Vector3> OnLastSafePosition;
     public static event Action<PlayerInfo, Vector3> OnCrashRecoverForward;
+    public static event Action<PlayerInfo> OnUpdateListUI;
 
     #region Start & Stop Callbacks
 
@@ -59,7 +60,6 @@ public class SetupPlayer : NetworkBehaviour
     {
         base.OnStartClient();
         m_PlayerInfo.ID = m_ID;
-        //m_PlayerInfo.Name = "Player" + m_ID;
         m_PlayerInfo.CurrentLap = 0;
         m_PlayerInfo.isLeader = m_PolePositionManager.CheckIsLeader();
         m_PolePositionManager.AddPlayer(m_PlayerInfo);
@@ -235,6 +235,19 @@ public class SetupPlayer : NetworkBehaviour
     public void RpcChangeCrashRecoverForward(Vector3 crashRecoverForward)
     {
         OnCrashRecoverForward?.Invoke(m_PlayerInfo, crashRecoverForward);
+    }
+
+    //Command y Rpc para actualizar lista de jugadores
+    [Command]
+    public void CmdUpdateListUI()
+    {
+        RpcUpdateListUI();
+    }
+
+    [ClientRpc]
+    public void RpcUpdateListUI()
+    {
+        OnUpdateListUI?.Invoke(m_PlayerInfo);
     }
     #endregion
 }

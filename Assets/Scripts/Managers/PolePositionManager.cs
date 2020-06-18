@@ -16,6 +16,8 @@ public class PolePositionManager : NetworkBehaviour
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4);
     public PlayerInfo playerLeader;
     SemaphoreSlim modifyPlayerSemaphore = new SemaphoreSlim(1, 1);
+    [SyncVar] public int numPlayersEnded;
+    SemaphoreSlim playersEndedSemaphore = new SemaphoreSlim(1, 1);
 
     [SyncVar] bool allPlayersReady = false;
     SemaphoreSlim updatePlayersReady = new SemaphoreSlim(1, 1);
@@ -24,8 +26,6 @@ public class PolePositionManager : NetworkBehaviour
 
     [Tooltip("Ángulo máximo del coche respecto a la dirección de la pista hasta que se detecta que va hacia atrás")]
     [SerializeField][Range(0f, 180f)] float goingBackwardsThreshold = 110f;
-
-    private float circuitLength = 0f;
 
     [SyncVar] public int numLaps = 1;
     [SerializeField] private int maxLaps = 6;
@@ -39,8 +39,6 @@ public class PolePositionManager : NetworkBehaviour
         if (networkManager == null) networkManager = FindObjectOfType<NetworkManagerPolePosition>();
         if (m_CircuitController == null) m_CircuitController = FindObjectOfType<CircuitController>();
 
-        circuitLength = m_CircuitController.CircuitLength;
-
         uiManager = FindObjectOfType<UIManager>();
         raceEndedLayer = LayerMask.NameToLayer("PlayerRaceEnded");
 
@@ -49,6 +47,8 @@ public class PolePositionManager : NetworkBehaviour
 
         Button addButton = uiManager.GetAddButton();
         addButton.onClick.AddListener(() => AddLaps());
+
+        SetupPlayer.OnUpdateListUI += UpdatePlayerOrderUI;
     }
 
     #region PlayerList Methods
@@ -66,6 +66,8 @@ public class PolePositionManager : NetworkBehaviour
         m_Players.Remove(player);
         playerLeader.GetComponent<PlayerLobby>().CmdUpdateUI();
         modifyPlayerSemaphore.Release();
+
+        CheckRaceEnded();
     }
     
     public bool CheckIsLeader()
@@ -89,7 +91,7 @@ public class PolePositionManager : NetworkBehaviour
 
         //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
         allPlayersReady = (numPlayersReady > 1 && numPlayersReady >= (m_Players.Count / 2) + 1);
-        //allPlayersReady = true;
+        allPlayersReady = true;
         playerLeader.GetComponent<PlayerLobby>().UpdateGoButtonState(allPlayersReady);
 
         updatePlayersReady.Release();
@@ -107,7 +109,6 @@ public class PolePositionManager : NetworkBehaviour
         for (int i = 0; i < m_Players.Count; ++i)
         {
             this.m_Players[i].GetComponent<SetupPlayer>().CmdChangeDistanceTravelled(ComputeCarArcLength(i));
-            Debug.Log(this.m_Players[i].Name + " " + this.m_Players[i].distanceTravelled);
         }
 
         m_Players.Sort((x, y) => y.distanceTravelled.CompareTo(x.distanceTravelled));
@@ -121,8 +122,6 @@ public class PolePositionManager : NetworkBehaviour
         }
 
         uiManager.UpdateRaceProgress(this.m_Players);
-
-        Debug.Log("El orden de carrera es: " + raceOrder);
     }
 
     //Calcula cuánta distancia han recorrido los jugadores en el circuito tomando como referencia los puntos de los segmentos.
@@ -167,9 +166,17 @@ public class PolePositionManager : NetworkBehaviour
 
         //Comprobación de si va hacia atrás (según el ángulo entre el forward del coche y la dirección del circuito)
         float ang = Vector3.Angle(m_CircuitController.GetSegment(segIdx), carFwd);
-        setupPlayer.CmdChangeGoingBackwards(ang > goingBackwardsThreshold);
+        bool goingBackwards = ang > goingBackwardsThreshold;
 
-        if (player.goingBackwards) Debug.Log(player.name + " sentido contrario: " + player.goingBackwards);
+        if(goingBackwards != player.goingBackwards)
+            setupPlayer.CmdChangeGoingBackwards(goingBackwards);
+
+    }
+
+    public void UpdatePlayerOrderUI(PlayerInfo player)
+    {
+        if(player.isLocalPlayer)
+            uiManager.UpdateRaceProgress(this.m_Players);
     }
     #endregion
 
@@ -213,24 +220,35 @@ public class PolePositionManager : NetworkBehaviour
 
     //Cuando un jugador termina la carrera, se indica que la ha terminado, y se le permite seguir jugando.
     //Sin embargo, no puede chocarse con otros jugadores y se para su contador de tiempo.
-    public void CheckRaceEnd(PlayerInfo player)
+    public void CheckPlayerFinished(PlayerInfo player)
     {
-        /*
-        if(player.CurrentLap >= numLaps)
+        if(!player.raceEnded && player.CurrentLap == numLaps)
         {
-            Debug.Log("Race end");
-            player.CmdRaceEnded(true);
+            player.GetComponent<SetupPlayer>().CmdChangeRanceEnded(true);
             player.GetComponent<RaceTimer>().StopTimer();
 
             player.gameObject.layer = raceEndedLayer;
             Transform[] children = player.GetComponentsInChildren<Transform>();
             foreach (Transform child in children)
                 child.gameObject.layer = raceEndedLayer;
-            
+
+            playersEndedSemaphore.Wait();
+            numPlayersEnded++;
+            playersEndedSemaphore.Release();
+
+            CheckRaceEnded();
+        }
+    }
+
+    public void CheckRaceEnded()
+    {
+        if (m_Players.Count == 1 || numPlayersEnded >= (m_Players.Count / 2) + 1)
+        {
+            Debug.Log("Carrera terminada");
             //Cuando la mayoría de jugadores han acabado la carrera se activa la interfaz de victoria
             //Activar UI de victoria
             //Mantener posición de los jugadores que han acabado
-        }*/
+        }
     }
     #endregion
 }

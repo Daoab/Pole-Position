@@ -43,6 +43,8 @@ public class PlayerInfo : NetworkBehaviour
     UIManager uiManager;
     PolePositionManager polePositionManager;
 
+    [SerializeField] float timeGoingBackwards = 1f;
+
     private void Awake()
     {
         uiManager = FindObjectOfType<UIManager>();
@@ -102,13 +104,18 @@ public class PlayerInfo : NetworkBehaviour
     #region Race Callbacks
     public void ChangeCurrentPosition(PlayerInfo player, int currentPosition)
     {
-        if (this.ID == player.ID) this.CurrentPosition = currentPosition;
+        if (this.ID == player.ID && !player.raceEnded) this.CurrentPosition = currentPosition;
     }
 
     public void ChangeCurrentLap(PlayerInfo player, int currentLap)
     {
-        
-        if (this.ID == player.ID)  this.CurrentLap = currentLap;
+
+        if (this.ID == player.ID)
+        {
+            currentLap = Mathf.Clamp(currentLap, 0, polePositionManager.numLaps);
+            this.CurrentLap = currentLap;
+            polePositionManager.CheckPlayerFinished(this);
+        }
 
         if (this.isLocalPlayer)
             uiManager.UpdateLapProgress(this.CurrentLap);
@@ -124,6 +131,16 @@ public class PlayerInfo : NetworkBehaviour
         if (this.ID == player.ID) this.goingBackwards = goingBackwards;
 
         if (this.isLocalPlayer)
+            StartCoroutine(WaitChangeGoingBackwards(player, goingBackwards));
+    }
+
+    private IEnumerator WaitChangeGoingBackwards(PlayerInfo player, bool goingBackwards)
+    {
+        bool previousValue = goingBackwards;
+
+        yield return new WaitForSecondsRealtime(timeGoingBackwards);
+
+        if(this.goingBackwards == previousValue)
             uiManager.UpdateTurnBack(this.goingBackwards);
     }
 

@@ -54,6 +54,13 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject countdownText;
     [Space]
 
+    [Header("End Race HUD")]
+    [SerializeField] private GameObject endGameHUD;
+    [SerializeField] private Button backButton;
+    [SerializeField] private Text resultText;
+    [SerializeField] private Text clasificationText;
+    [Space]
+
     [SerializeField] GameObject playerListUI;
     [Space]
 
@@ -167,7 +174,6 @@ public class UIManager : MonoBehaviour
 
         foreach(PlayerInfo p in players)
         {
-            Debug.Log(p.Name + " " + p.CurrentPosition);
             textPosition.text += p.CurrentPosition + " — " + p.Name + "\n";
         }
     }

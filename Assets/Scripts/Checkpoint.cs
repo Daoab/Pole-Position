@@ -11,12 +11,14 @@ public class Checkpoint : MonoBehaviour
 
     //RaceNetworkBehaviour raceNetworkBehaviour;
     UIManager uIManager;
+    PolePositionManager polePositionManager;
 
     private void Start()
     {
         //raceNetworkBehaviour = FindObjectOfType<RaceNetworkBehaviour>();
         distanceToNextCheckpoint = Mathf.Abs(Vector3.Distance(gameObject.transform.position, nextCheckpoint.gameObject.transform.position));
         uIManager = FindObjectOfType<UIManager>();
+        polePositionManager = FindObjectOfType<PolePositionManager>();
     }
 
     //Se ha implementado un sistema de checkpoints para asegurar que las vueltas al circuito se realizan correctamente
@@ -34,7 +36,6 @@ public class Checkpoint : MonoBehaviour
             {
                 setupPlayer.CmdChangeCurrentLap(playerInfo.CurrentLap + 1);
                 raceTimer.ResetLapTime();
-                //raceNetworkBehaviour.CheckRaceEnd(playerInfo);
             }
 
             nextCheckpoint.gameObject.SetActive(true);
