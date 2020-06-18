@@ -25,12 +25,10 @@ public class RaceTimer : NetworkBehaviour
 
     void FixedUpdate()
     {
-        if(timerRunning && isLocalPlayer)
+        if(timerRunning)
         {
-            playerInfo.totalTime += Time.fixedDeltaTime;//deltaTime;
-            playerInfo.currentLapTime += Time.fixedDeltaTime;//deltaTime;
-
-            //uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
+            playerInfo.totalTime += Time.fixedDeltaTime;
+            playerInfo.currentLapTime += Time.fixedDeltaTime;
         }
     }
 
@@ -46,6 +44,9 @@ public class RaceTimer : NetworkBehaviour
 
     IEnumerator UpdateUI()
     {
+        if (!timerRunning)
+            StopCoroutine(UpdateUI());
+
         yield return new WaitForSecondsRealtime(0.1f);
 
         uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);

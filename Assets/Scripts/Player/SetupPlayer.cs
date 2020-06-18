@@ -17,7 +17,6 @@ public class SetupPlayer : NetworkBehaviour
     [SyncVar] private string m_Name;
 
     [SerializeField] Text debug;
-    [SerializeField] GameObject updateRaceOrderTrigger;
 
     private UIManager m_UIManager;
     private NetworkManagerPolePosition m_NetworkManager;
@@ -37,7 +36,6 @@ public class SetupPlayer : NetworkBehaviour
     public static event Action<PlayerInfo, bool> OnRaceEnded;
     public static event Action<PlayerInfo, Vector3> OnLastSafePosition;
     public static event Action<PlayerInfo, Vector3> OnCrashRecoverForward;
-    public static event Action<PlayerInfo> OnUpdateListUI;
 
     #region Start & Stop Callbacks
 
@@ -102,14 +100,15 @@ public class SetupPlayer : NetworkBehaviour
             m_UIManager.ActivateRaceUI();
             m_PolePositionManager.UpdateRaceProgress();
             m_UIManager.UpdateLapProgress(m_PlayerInfo.CurrentLap);
-            StartCoroutine(Timer());
+            m_UIManager.ActivateCountdown();
         }
+        StartCoroutine(Timer());
     }
 
     IEnumerator Timer()
     {
-        m_UIManager.ActivateCountdown();
         yield return new WaitForSecondsRealtime(m_PolePositionManager.countdown);
+        GetComponent<RaceTimer>().enabled = true;
         StartCar();
     }
 
@@ -118,13 +117,12 @@ public class SetupPlayer : NetworkBehaviour
     {
         if (isLocalPlayer)
         {
-            GetComponent<RaceTimer>().enabled = true;
             carStarted = true;
 
             m_PlayerController.enabled = true;
             m_PlayerController.OnSpeedChangeEvent += OnSpeedChangeEventHandler;
-            updateRaceOrderTrigger.SetActive(true);
         }
+
     }
 
     private void Update()
@@ -235,19 +233,6 @@ public class SetupPlayer : NetworkBehaviour
     public void RpcChangeCrashRecoverForward(Vector3 crashRecoverForward)
     {
         OnCrashRecoverForward?.Invoke(m_PlayerInfo, crashRecoverForward);
-    }
-
-    //Command y Rpc para actualizar lista de jugadores
-    [Command]
-    public void CmdUpdateListUI()
-    {
-        RpcUpdateListUI();
-    }
-
-    [ClientRpc]
-    public void RpcUpdateListUI()
-    {
-        OnUpdateListUI?.Invoke(m_PlayerInfo);
     }
     #endregion
 }

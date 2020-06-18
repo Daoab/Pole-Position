@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
+    [SyncVar] public bool raceEnded = false;
     public NetworkManagerPolePosition networkManager;
     private UIManager uiManager;
 
@@ -30,6 +31,8 @@ public class PolePositionManager : NetworkBehaviour
     [SyncVar] public int numLaps = 1;
     [SerializeField] private int maxLaps = 6;
 
+    [SerializeField] float raceOrderUpdateRate = 1f;
+
     public int countdown = 3;
 
     LayerMask raceEndedLayer;
@@ -47,8 +50,6 @@ public class PolePositionManager : NetworkBehaviour
 
         Button addButton = uiManager.GetAddButton();
         addButton.onClick.AddListener(() => AddLaps());
-
-        SetupPlayer.OnUpdateListUI += UpdatePlayerOrderUI;
     }
 
     #region PlayerList Methods
@@ -68,6 +69,11 @@ public class PolePositionManager : NetworkBehaviour
         modifyPlayerSemaphore.Release();
 
         CheckRaceEnded();
+    }
+
+    public List<PlayerInfo> GetPlayerList()
+    {
+        return this.m_Players;
     }
     
     public bool CheckIsLeader()
@@ -91,7 +97,7 @@ public class PolePositionManager : NetworkBehaviour
 
         //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
         allPlayersReady = (numPlayersReady > 1 && numPlayersReady >= (m_Players.Count / 2) + 1);
-        allPlayersReady = true;
+        //allPlayersReady = true;
         playerLeader.GetComponent<PlayerLobby>().UpdateGoButtonState(allPlayersReady);
 
         updatePlayersReady.Release();
@@ -99,12 +105,24 @@ public class PolePositionManager : NetworkBehaviour
     #endregion
 
     #region Race
+
+    IEnumerator CheckRaceOrder()
+    {
+        while (!raceEnded) 
+        {
+            yield return new WaitForSecondsRealtime(raceOrderUpdateRate);
+            UpdateRaceProgress();
+        }
+    }
+
     //Calcula la distancia que han recorrido los jugadores en total en el circuito, y los ordena según esa distancia,
     //de modo que se pueda obtener su posición en la carrera
     public void UpdateRaceProgress()
     {
         if (m_Players.Count == 0 && isLocalPlayer)
             return;
+
+        Debug.Log("Update race progress");
 
         for (int i = 0; i < m_Players.Count; ++i)
         {
@@ -216,6 +234,8 @@ public class PolePositionManager : NetworkBehaviour
         {
             p.GetComponent<PlayerLobby>().InstantiateCar();
         }
+
+        StartCoroutine(CheckRaceOrder());
     }
 
     //Cuando un jugador termina la carrera, se indica que la ha terminado, y se le permite seguir jugando.
@@ -244,10 +264,19 @@ public class PolePositionManager : NetworkBehaviour
     {
         if (m_Players.Count == 1 || numPlayersEnded >= (m_Players.Count / 2) + 1)
         {
-            Debug.Log("Carrera terminada");
-            //Cuando la mayoría de jugadores han acabado la carrera se activa la interfaz de victoria
-            //Activar UI de victoria
-            //Mantener posición de los jugadores que han acabado
+            raceEnded = true;
+            UpdateRaceProgress();
+            RaceTimer raceTimer;
+
+            foreach(PlayerInfo player in m_Players)
+            {
+                player.GetComponent<PlayerController>().enabled = false;
+                raceTimer = player.GetComponent<RaceTimer>();
+                raceTimer.StopTimer();
+                raceTimer.GetFinalTimes();
+            }
+
+            uiManager.ActivateEndGameHUD(this.m_Players);
         }
     }
     #endregion
