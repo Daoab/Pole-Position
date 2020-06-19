@@ -89,7 +89,7 @@ public class UIManager : MonoBehaviour
         m_NetworkManager = FindObjectOfType<NetworkManagerPolePosition>();
 
         m_NetworkManager.StartClient();
-        m_NetworkManager.networkAddress = inputFieldIP.text;
+        m_NetworkManager.networkAddress = inputFieldIP.text.Equals("") ? "localhost" : inputFieldIP.text;
         ActivateUsernameUI();
     }
 
