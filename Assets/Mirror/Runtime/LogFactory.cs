@@ -55,7 +55,7 @@ namespace Mirror
     {
         public static void LogError(this ILogger logger, object message)
         {
-            logger.Log(LogType.Error, message);
+            //logger.Log(LogType.Error, message);
         }
 
         public static void LogWarning(this ILogger logger, object message)

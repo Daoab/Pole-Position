@@ -179,7 +179,7 @@ public class PlayerInfo : NetworkBehaviour
     {
         if (this.ID == player.ID) player.totalTime = totalTime;
 
-        if(this.isLocalPlayer)
+        if(this != null && this.isLocalPlayer)
             uiManager.UpdateTime(this.currentLapTime, this.totalTime);
     }
 
