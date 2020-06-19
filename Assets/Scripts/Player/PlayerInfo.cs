@@ -109,7 +109,6 @@ public class PlayerInfo : NetworkBehaviour
 
     public void ChangeCurrentLap(PlayerInfo player, int currentLap)
     {
-
         if (this.ID == player.ID)
         {
             currentLap = Mathf.Clamp(currentLap, 0, polePositionManager.numLaps);

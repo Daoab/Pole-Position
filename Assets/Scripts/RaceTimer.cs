@@ -44,14 +44,14 @@ public class RaceTimer : NetworkBehaviour
 
     IEnumerator UpdateUI()
     {
-        if (!timerRunning)
-            StopCoroutine(UpdateUI());
+        while(timerRunning && isLocalPlayer)
+        {
+            yield return new WaitForSecondsRealtime(0.1f);
 
-        yield return new WaitForSecondsRealtime(0.1f);
+            uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
+        }
 
-        uIManager.UpdateTime(playerInfo.currentLapTime, playerInfo.totalTime);
-
-        StartCoroutine(UpdateUI());
+        StopCoroutine(UpdateUI());
     }
 
     public void GetFinalTimes()

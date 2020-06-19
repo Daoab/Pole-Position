@@ -57,7 +57,6 @@ public class UIManager : MonoBehaviour
 
     [Header("End Race HUD")]
     [SerializeField] private GameObject endGameHUD;
-    [SerializeField] private Button backButton;
     [SerializeField] private Text resultText;
     [SerializeField] private Text[] clasificationText;
     [SerializeField] private Camera endGameCamera;
@@ -160,9 +159,11 @@ public class UIManager : MonoBehaviour
     public void ActivateEndGameHUD(List<PlayerInfo> players)
     {
         inGameHUD.SetActive(false);
+
         Camera.main.gameObject.SetActive(false);
         endGameCamera.gameObject.SetActive(true);
         endGameHUD.SetActive(true);
+
         string aux = "";
 
         for(int i = 0; i < players.Count; i++)
@@ -173,14 +174,12 @@ public class UIManager : MonoBehaviour
             aux = players[i].CurrentPosition + " — " + players[i].Name + " — ";
 
             if (players[i].raceEnded)
-                aux += players[i].totalTime.ToString("0.00");
-            else
-                aux += "DNF";
+                 aux += players[i].totalTime.ToString("0.00");
+             else
+                 aux += "DNF";
 
             clasificationText[players[i].CurrentPosition - 1].text = aux;
         }
-
-        backButton.onClick.AddListener(() => SceneManager.LoadScene(SceneManager.GetActiveScene().name));
     }
     #endregion
 

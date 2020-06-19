@@ -245,9 +245,14 @@ public class PolePositionManager : NetworkBehaviour
         if(!player.raceEnded && player.CurrentLap == numLaps)
         {
             player.GetComponent<SetupPlayer>().CmdChangeRanceEnded(true);
+            player.raceEnded = true;
             player.GetComponent<RaceTimer>().StopTimer();
 
             player.gameObject.layer = raceEndedLayer;
+
+            if(!player.isLocalPlayer)
+                player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
             Transform[] children = player.GetComponentsInChildren<Transform>();
             foreach (Transform child in children)
                 child.gameObject.layer = raceEndedLayer;
@@ -262,7 +267,7 @@ public class PolePositionManager : NetworkBehaviour
 
     public void CheckRaceEnded()
     {
-        if (m_Players.Count == 1 || numPlayersEnded >= (m_Players.Count / 2) + 1)
+        if (m_Players.Count == 1 || numPlayersEnded >= ((m_Players.Count / 2) + 1))
         {
             raceEnded = true;
             UpdateRaceProgress();
@@ -271,6 +276,7 @@ public class PolePositionManager : NetworkBehaviour
             foreach(PlayerInfo player in m_Players)
             {
                 player.GetComponent<PlayerController>().enabled = false;
+
                 raceTimer = player.GetComponent<RaceTimer>();
                 raceTimer.StopTimer();
                 raceTimer.GetFinalTimes();
