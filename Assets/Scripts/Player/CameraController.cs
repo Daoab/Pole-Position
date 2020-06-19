@@ -9,21 +9,20 @@ public class CameraController : MonoBehaviour
     [SerializeField] public Vector3 m_offset = new Vector3(10, 10, 10);
 
     [SerializeField] public CircuitController m_Circuit;
-    [SerializeField] private float m_Distance = 8; //10
-    [SerializeField] private float m_Elevation = 4; //8
-    [Range(0, 1)] [SerializeField] private float m_Following = 1f; //0,5
+    [SerializeField] private float m_Distance = 8; 
+    [SerializeField] private float m_Elevation = 4;
+    [Range(0, 1)] [SerializeField] private float m_Following = 1f; 
 
     private Vector3 m_Direction = Vector3.zero;
 
     private Camera mainCamera;
 
-    // Start is called before the first frame update
     void Start()
     {
         mainCamera = this.GetComponent<Camera>();
     }
 
-    // Update is called once per frame
+    //Ajusta la cámara a la posición del jugador por el circuito cada frame de forma suave
     void Update()
     {
         if (m_Focus != null)

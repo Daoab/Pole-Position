@@ -9,11 +9,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public bool showGUI = true;
-
-    [SerializeField] Text DebugText;
-
     private NetworkManagerPolePosition m_NetworkManager;
-    private PolePositionManager polePositionManager;
 
     #region UIReferences
     [Header("Main Menu")] [SerializeField] private GameObject mainMenu;
@@ -62,12 +58,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Camera endGameCamera;
     [Space]
 
+    [SerializeField] Text DebugText;
+
     [SerializeField] GameObject playerListUI;
     [Space]
-
     [SerializeField] private GameObject colorChangeButtons;
     [Space]
-
     [SerializeField] private GameObject carBody;
     #endregion
 
@@ -108,6 +104,20 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region Activate/Deactivate UI
+    private void ActivateMainMenu()
+    {
+        mainMenu.SetActive(true);
+        inGameHUD.SetActive(false);
+        userNameUI.SetActive(false);
+        chatUI.SetActive(false);
+    }
+
+    private void ActivateUsernameUI()
+    {
+        mainMenu.SetActive(false);
+        userNameUI.SetActive(true);
+    }
+
     public void ActivateLobbyWindow()
     {
         userNameUI.SetActive(false);
@@ -117,23 +127,9 @@ public class UIManager : MonoBehaviour
         readyButton.gameObject.SetActive(true);
     }
 
-    private void ActivateUsernameUI()
-    {
-        mainMenu.SetActive(false);
-        userNameUI.SetActive(true);
-    }
-
     public void ActivateRaceSettings()
     {
         lapsUI.gameObject.SetActive(true);
-    }
-
-    private void ActivateMainMenu()
-    {
-        mainMenu.SetActive(true);
-        inGameHUD.SetActive(false);
-        userNameUI.SetActive(false);
-        chatUI.SetActive(false);
     }
 
     public void ActivateRaceUI()
@@ -173,6 +169,7 @@ public class UIManager : MonoBehaviour
 
             aux = players[i].CurrentPosition + " — " + players[i].Name + " — ";
 
+            //Si un jugador no ha terminado la carrear se muestra DNF (did not finish) en lugar del tiempo
             if (players[i].raceEnded)
                  aux += players[i].totalTime.ToString("0.00");
              else
@@ -189,22 +186,14 @@ public class UIManager : MonoBehaviour
         textSpeed.text = "Speed " + speed + " Km/h";
     }
 
+    //Actualizar le color del coche que aparece en el menú prinicipal
     public void UpdateCarPreviewColor(Color color)
     {
         Material carMaterial = carBody.GetComponent<MeshRenderer>().materials[1];
         carMaterial.color = color;
     }
 
-    public void UpdateRaceProgress(List<PlayerInfo> players)
-    {
-        textPosition.text = "";
-
-        foreach(PlayerInfo p in players)
-        {
-            textPosition.text += p.CurrentPosition + " — " + p.Name + "\n";
-        }
-    }
-
+    //Actualizar lista de jugadores en el lobby
     public void UpdatePlayerListUI(List<PlayerInfo> players)
     {
         for (int i = 0; i < playerNamesList.Length; i++)
@@ -221,22 +210,36 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    //Actualizar la interfaz de ajustes de la carrera
     public void UpdateLapsSettingsUI(int numLaps)
     {
         lapsSettings.text = "Laps: " + numLaps.ToString();
     }
 
+    //Actualizar orden de los jugadores durante la carrera
+    public void UpdateRaceProgress(List<PlayerInfo> players)
+    {
+        textPosition.text = "";
+
+        foreach (PlayerInfo p in players)
+        {
+            textPosition.text += p.CurrentPosition + " — " + p.Name + "\n";
+        }
+    }
+
+    //Actualizar el contador de vueltas del jugador
     public void UpdateLapProgress(int lap)
     {
         textLaps.text = lap.ToString() + "/" + FindObjectOfType<PolePositionManager>().numLaps.ToString();
-        //textLaps.text = "LAP: " + lap.ToString() + "/" + polePositionManager.numLaps.ToString();
     }
 
+    //Actualizar tiempo total y de cada vuelta
     public void UpdateTime(float currentTime, float totalTime)
     {
         textTime.text = "Total time: \n" + totalTime.ToString("0.00") + "\nCurrent time: \n" + currentTime.ToString("0.00");
     }
 
+    //Actualizar el indicar de si un jugador va marcha atrás
     public void UpdateTurnBack(bool goingBackwards)
     {
         turnBack.gameObject.SetActive(goingBackwards);
@@ -305,6 +308,5 @@ public class UIManager : MonoBehaviour
     {
         return DebugText;
     }
-
     #endregion
 }

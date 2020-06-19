@@ -7,13 +7,13 @@ using Mirror;
 public class RaceTimer : NetworkBehaviour
 {
     PlayerInfo playerInfo;
+    UIManager uIManager;
 
+    //Si el timer debe contar el tiempo o no
     bool timerRunning = true;
 
     public static event Action<PlayerInfo, float> OnTotalTime;
     public static event Action<PlayerInfo, float> OnLapTime;
-
-    UIManager uIManager;
 
     private void Start()
     {
@@ -42,6 +42,8 @@ public class RaceTimer : NetworkBehaviour
         playerInfo.currentLapTime = 0f;
     }
 
+    //Se actualiza la interfaz que muestra el tiempo 10 veces por segundo 
+    //No es necesario actualizar más amenudo y así no se mandan mensajes innecesarios
     IEnumerator UpdateUI()
     {
         while(timerRunning && isLocalPlayer)
@@ -54,6 +56,7 @@ public class RaceTimer : NetworkBehaviour
         StopCoroutine(UpdateUI());
     }
 
+    //Se sincroniza el tiempo total de cada jugador en todas las instancias del juego
     public void GetFinalTimes()
     {
         CmdChangeTotalTime(playerInfo.totalTime);

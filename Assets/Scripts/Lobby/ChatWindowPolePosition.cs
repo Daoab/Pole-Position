@@ -25,6 +25,7 @@ public class ChatWindowPolePosition : MonoBehaviour
         AppendMessage(prettyMessage);
     }
 
+    //Este método envía el mensaje escrito en el input field al pulsar el botón de send
     public void OnSend()
     {
         if (chatMessage.text.Trim() == "")
@@ -39,6 +40,7 @@ public class ChatWindowPolePosition : MonoBehaviour
         chatMessage.text = "";
     }
 
+    //Unir el mensaje al resto de mensajes del chat
     internal void AppendMessage(string message)
     {
         StartCoroutine(AppendAndScroll(message));
@@ -48,11 +50,11 @@ public class ChatWindowPolePosition : MonoBehaviour
     {
         chatHistory.text += message + "\n";
 
-        // it takes 2 frames for the UI to update ?!?!
+        //La UI necesita dos frames para refrescarse y poder usar la barra vertical
         yield return null;
         yield return null;
 
-        // slam the scrollbar down
+        //Bajar la barra vertical
         scrollbar.value = 0;
     }
 }

@@ -10,21 +10,22 @@ using UnityEngine.UI;
 public class PolePositionManager : NetworkBehaviour
 {
     public int numPlayers;
-    [SyncVar] public bool raceEnded = false;
+    
     public NetworkManagerPolePosition networkManager;
     private UIManager uiManager;
+    private CircuitController m_CircuitController;
 
+    SemaphoreSlim modifyPlayerSemaphore = new SemaphoreSlim(1, 1);
     private readonly List<PlayerInfo> m_Players = new List<PlayerInfo>(4);
     public PlayerInfo playerLeader;
-    SemaphoreSlim modifyPlayerSemaphore = new SemaphoreSlim(1, 1);
+
+    [SyncVar] public bool raceEnded = false;
     [SyncVar] public int numPlayersEnded;
     SemaphoreSlim playersEndedSemaphore = new SemaphoreSlim(1, 1);
-
     [SyncVar] bool allPlayersReady = false;
     SemaphoreSlim updatePlayersReady = new SemaphoreSlim(1, 1);
 
-    private CircuitController m_CircuitController;
-
+    //Parámetros de la carrera
     [Tooltip("Ángulo máximo del coche respecto a la dirección de la pista hasta que se detecta que va hacia atrás")]
     [SerializeField][Range(0f, 180f)] float goingBackwardsThreshold = 110f;
 
@@ -37,6 +38,7 @@ public class PolePositionManager : NetworkBehaviour
 
     LayerMask raceEndedLayer;
 
+    //Obtención de referencias y asignación de callbacks a los botones de las vueltas
     private void Awake()
     {
         if (networkManager == null) networkManager = FindObjectOfType<NetworkManagerPolePosition>();
@@ -50,6 +52,12 @@ public class PolePositionManager : NetworkBehaviour
 
         Button addButton = uiManager.GetAddButton();
         addButton.onClick.AddListener(() => AddLaps());
+    }
+
+    //Se muestra en la interfaz el nombre de los jugadores conectados, y si están listos o no
+    public void UpdatePlayerListUI()
+    {
+        uiManager.UpdatePlayerListUI(m_Players);
     }
 
     #region PlayerList Methods
@@ -83,6 +91,7 @@ public class PolePositionManager : NetworkBehaviour
     #endregion
 
     #region Lobby
+    //Comprobación de si todos los jugadores están listos
     public void UpdateNumberOfPlayersReady()
     {
         updatePlayersReady.Wait();
@@ -97,7 +106,7 @@ public class PolePositionManager : NetworkBehaviour
 
         //Se puede comenzar la partida si la mayoría de jugadores (la mitad más uno (1)) están listos
         allPlayersReady = (numPlayersReady > 1 && numPlayersReady >= (m_Players.Count / 2) + 1);
-        //allPlayersReady = true;
+
         playerLeader.GetComponent<PlayerLobby>().UpdateGoButtonState(allPlayersReady);
 
         updatePlayersReady.Release();
@@ -105,16 +114,6 @@ public class PolePositionManager : NetworkBehaviour
     #endregion
 
     #region Race
-
-    IEnumerator CheckRaceOrder()
-    {
-        while (!raceEnded) 
-        {
-            yield return new WaitForSecondsRealtime(raceOrderUpdateRate);
-            UpdateRaceProgress();
-        }
-    }
-
     //Calcula la distancia que han recorrido los jugadores en total en el circuito, y los ordena según esa distancia,
     //de modo que se pueda obtener su posición en la carrera
     public void UpdateRaceProgress()
@@ -191,14 +190,6 @@ public class PolePositionManager : NetworkBehaviour
 
     }
 
-    public void UpdatePlayerOrderUI(PlayerInfo player)
-    {
-        if(player.isLocalPlayer)
-            uiManager.UpdateRaceProgress(this.m_Players);
-    }
-    #endregion
-
-    #region laps
     public void AddLaps()
     {
         Debug.Log("AddLaps");
@@ -220,14 +211,9 @@ public class PolePositionManager : NetworkBehaviour
     }
     #endregion
 
-    //Se muestra en la interfaz el nombre de los jugadores conectados, y si están listos o no
-    public void UpdatePlayerListUI()
-    {
-        uiManager.UpdatePlayerListUI(m_Players);
-    }
-
     #region RaceStart Rpc and RaceEnd
     [ClientRpc]
+    //Todos los jugadores en el lobby instancian sus coches en la pista
     public void RpcStartRace()
     {
         foreach (PlayerInfo p in m_Players)
@@ -236,6 +222,16 @@ public class PolePositionManager : NetworkBehaviour
         }
 
         StartCoroutine(CheckRaceOrder());
+    }
+
+    //Cada cierto tiempo (indicado por raceOrderUpdateRate) se comprueba el orden de los jugadores en la carrera
+    IEnumerator CheckRaceOrder()
+    {
+        while (!raceEnded)
+        {
+            yield return new WaitForSecondsRealtime(raceOrderUpdateRate);
+            UpdateRaceProgress();
+        }
     }
 
     //Cuando un jugador termina la carrera, se indica que la ha terminado, y se le permite seguir jugando.
@@ -265,6 +261,7 @@ public class PolePositionManager : NetworkBehaviour
         }
     }
 
+    //Se comprueba si la mayoría de jugadores han terminado la carrera
     public void CheckRaceEnded()
     {
         if (m_Players.Count == 1 || numPlayersEnded >= ((m_Players.Count / 2) + 1))

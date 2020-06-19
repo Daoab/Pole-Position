@@ -35,6 +35,8 @@ public class PlayerLobby : NetworkBehaviour
         polePositionManager = FindObjectOfType<PolePositionManager>();
         networkManager = FindObjectOfType<NetworkManagerPolePosition>();
 
+        //Se asigna como líder al jugador que entre primero a la partida
+        //El líder puede acceder a los ajustes de la carrera e iniciar la misma
         CmdChangeIsLeader(playerInfo.isLeader);
 
         if (isLocalPlayer)
@@ -43,7 +45,7 @@ public class PlayerLobby : NetworkBehaviour
         }
     }
 
-    //Se asocian listeners a los elementos de la interfaz
+    //Se asocian listeners a los elementos de la interfaz y se obtienen referencias necesarias
     private void GetUIReferences()
     {
         inputField = uIManager.GetUsernameUIInputField();
@@ -79,6 +81,7 @@ public class PlayerLobby : NetworkBehaviour
         }
     }
 
+    //El jugador del lobby coloca su coche en la pista
     public void InstantiateCar()
     {
         GetComponent<SetupPlayer>().PlaceCar();
@@ -175,12 +178,14 @@ public class PlayerLobby : NetworkBehaviour
         }
     }
 
+    //Command y RPC para indicar a todos los jugadores que comiencen la carrera (colocan los coches y esperan a la cuenta atrás)
     [Command]
     public void CmdStartRace()
     {
         polePositionManager.RpcStartRace();
     }
 
+    //Command y RPc para indicar a todos los jugadores que actualicen la interfaz del orden de la carrera
     [Command]
     public void CmdUpdateUI()
     {

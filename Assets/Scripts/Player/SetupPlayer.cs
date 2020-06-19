@@ -6,11 +6,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
 
-/*
-	Documentation: https://mirror-networking.com/docs/Guides/NetworkBehaviour.html
-	API Reference: https://mirror-networking.com/docs/api/Mirror.NetworkBehaviour.html
-*/
-
 public class SetupPlayer : NetworkBehaviour
 {
     [SyncVar] private int m_ID;
@@ -75,6 +70,7 @@ public class SetupPlayer : NetworkBehaviour
     {
         m_PolePositionManager.RemovePlayer(m_PlayerInfo);
         base.OnStopClient();
+        NetworkServer.Destroy(this.gameObject);
     }
 
     #endregion
@@ -89,6 +85,7 @@ public class SetupPlayer : NetworkBehaviour
         debug = m_UIManager.GetDebugText();
     }
 
+    //Se coloca el coche en la pista y se inicia la cuenta atrás hasta el incio de la carrera
     public void PlaceCar()
     {
         playerCar.SetActive(true);
@@ -105,6 +102,7 @@ public class SetupPlayer : NetworkBehaviour
         StartCoroutine(Timer());
     }
 
+    //Esperar el tiempo indicado en polePositionManager antes de permitir a los jugadores moverse
     IEnumerator Timer()
     {
         yield return new WaitForSecondsRealtime(m_PolePositionManager.countdown);
@@ -125,6 +123,7 @@ public class SetupPlayer : NetworkBehaviour
 
     }
 
+    //Cada frame se comprueba si el coche está dado la vuelta o está yendo en dirección contraria
     private void Update()
     {
         if (isLocalPlayer && carStarted)

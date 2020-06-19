@@ -60,6 +60,7 @@ public class PlayerController : NetworkBehaviour
         m_PlayerInfo = GetComponent<PlayerInfo>();
     }
 
+    //Recoger input del jugador cada frame
     public void Update()
     {
         InputAcceleration = Input.GetAxis("Vertical");
@@ -67,12 +68,14 @@ public class PlayerController : NetworkBehaviour
         InputBrake = Input.GetAxis("Jump");
         Speed = m_Rigidbody.velocity.magnitude;
 
+        //Si el coche ha chocado se inicia la secuencia de recuperación de choques
         if(!recoveringFromCrash && CheckCrashed())
         {
             StartCoroutine(RecoverFromCrash());
         }
     }
 
+    //Se aplica el input del jugador al rigidbody del coche
     public void FixedUpdate()
     {
         InputSteering = Mathf.Clamp(InputSteering, -1, 1);
@@ -160,7 +163,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-// this is used to add more grip in relation to speed
+    // this is used to add more grip in relation to speed
     private void AddDownForce()
     {
         foreach (var axleInfo in axleInfos)
@@ -177,8 +180,8 @@ public class PlayerController : NetworkBehaviour
             m_Rigidbody.velocity = topSpeed * m_Rigidbody.velocity.normalized;
     }
 
-// finds the corresponding visual wheel
-// correctly applies the transform
+    // finds the corresponding visual wheel
+    // correctly applies the transform
     public void ApplyLocalPositionToVisuals(WheelCollider col)
     {
         if (col.transform.childCount == 0)
@@ -195,6 +198,7 @@ public class PlayerController : NetworkBehaviour
         myTransform.rotation = rotation;
     }
 
+    //Alinea las ruedas con el suelo para ayudar en los giros
     private void SteerHelper()
     {
         foreach (var axleInfo in axleInfos)
@@ -209,7 +213,7 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-// this if is needed to avoid gimbal lock problems that will make the car suddenly shift direction
+        // this if is needed to avoid gimbal lock problems that will make the car suddenly shift direction
         if (Mathf.Abs(CurrentRotation - transform.eulerAngles.y) < 10f)
         {
             var turnAdjust = (transform.eulerAngles.y - CurrentRotation) * m_SteerHelper;
@@ -238,6 +242,5 @@ public class PlayerController : NetworkBehaviour
 
         recoveringFromCrash = false;
     }
-
     #endregion
 }
